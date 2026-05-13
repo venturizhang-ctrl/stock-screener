@@ -1,28 +1,36 @@
-// Service Worker — 离线缓存
-var CACHE = 'aq-stocks-v1';
-var FILES = [
-    '.',
-    'index.html',
-    'css/style.css',
-    'js/api.js',
-    'js/filter.js',
-    'js/ui.js',
-    'js/app.js',
-    'manifest.json'
-];
+// Service Worker — 网络优先策略
+var CACHE = 'aq-stocks-v2';
 
 self.addEventListener('install', function(e) {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', function(e) {
     e.waitUntil(
-        caches.open(CACHE).then(function(cache) {
-            return cache.addAll(FILES);
+        caches.keys().then(function(keys) {
+            return Promise.all(keys.map(function(key) {
+                if (key !== CACHE) return caches.delete(key);
+            }));
         })
     );
 });
 
 self.addEventListener('fetch', function(e) {
+    // 对API请求不缓存
+    if (e.request.url.indexOf('eastmoney.com') > -1 ||
+        e.request.url.indexOf('sina.com') > -1 ||
+        e.request.url.indexOf('gtimg.cn') > -1) {
+        return;
+    }
     e.respondWith(
-        caches.match(e.request).then(function(r) {
-            return r || fetch(e.request);
+        fetch(e.request).then(function(resp) {
+            var clone = resp.clone();
+            caches.open(CACHE).then(function(cache) {
+                cache.put(e.request, clone);
+            });
+            return resp;
+        }).catch(function() {
+            return caches.match(e.request);
         })
     );
 });
