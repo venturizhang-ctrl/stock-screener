@@ -36,9 +36,9 @@
         // 日期限制：本月和上个月
         var now = new Date();
         var dateInput = document.getElementById('historyDate');
-        var firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        var twentyDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 20);
         var yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-        dateInput.min = fmtDate(firstDayLastMonth);
+        dateInput.min = fmtDate(twentyDaysAgo);
         dateInput.max = fmtDate(yesterday);
         if (!dateInput.value || dateInput.value > dateInput.max || dateInput.value < dateInput.min) {
             dateInput.value = fmtDate(yesterday);
@@ -57,7 +57,7 @@
             document.getElementById('historyDateHint').textContent = '⚠ ' + this.value + ' 是周末，非交易日，请重新选择';
             document.getElementById('historyDateHint').style.color = '#E65100';
         } else {
-            document.getElementById('historyDateHint').textContent = this.value + ' 周一至周五（如遇节假日请自判）';
+            document.getElementById('historyDateHint').textContent = this.value + '（至多查询近20个交易日）';
             document.getElementById('historyDateHint').style.color = '#888';
         }
     });
