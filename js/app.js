@@ -74,7 +74,8 @@
 
         if (!isTradingTime()) {
             var status = getMarketStatus();
-            if (!confirm('当前' + status.text + '，将显示最近交易日收盘数据。是否继续？')) return;
+            var ok = await myConfirm('当前' + status.text + '，将显示最近交易日收盘数据。是否继续？');
+            if (!ok) return;
         }
 
         hideError(); resetProgress(); setRefreshButton(true);

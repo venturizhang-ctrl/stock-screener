@@ -121,6 +121,14 @@
         <p class="empty-hint">数据来源：新浪财经 + 腾讯行情</p>
     </section>
 
+    <!-- 自定义弹窗 -->
+    <section id="modalOverlay" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <p id="modalMsg" class="modal-msg"></p>
+            <div class="modal-btns" id="modalBtns"></div>
+        </div>
+    </section>
+
     <footer class="footer">
         <p>数据来源：新浪财经 · 腾讯行情 | 仅供参考，不构成投资建议</p>
     </footer>
@@ -144,19 +152,50 @@
             else { text.style.display = 'none'; this.textContent = '调试信息 ▸'; }
         });
         // 清除缓存（仅所选日期）
-        document.getElementById('btnClearCache').addEventListener('click', function() {
+        document.getElementById('btnClearCache').addEventListener('click', async function() {
             var d = document.getElementById('historyDate').value;
-            if (!d) { alert('请先选择日期'); return; }
+            if (!d) { await myAlert('请先选择日期'); return; }
             var key = 'aq_hist_' + d;
             if (localStorage.getItem(key)) {
-                if (confirm('是否清除 ' + d + ' 历史数据？')) {
+                if (await myConfirm('是否清除 ' + d + ' 历史数据？')) {
                     localStorage.removeItem(key);
-                    alert(d + ' 缓存已清除');
+                    await myAlert(d + ' 缓存已清除');
                 }
             } else {
-                alert(d + ' 无缓存数据');
+                await myAlert(d + ' 无缓存数据');
             }
         });
+        // 自定义弹窗（隐藏Chrome来源显示）
+        function myAlert(msg) {
+            return new Promise(function(resolve) {
+                document.getElementById('modalMsg').textContent = msg;
+                document.getElementById('modalBtns').innerHTML = '<button class="modal-btn-ok" id="modalOk">确定</button>';
+                document.getElementById('modalOverlay').style.display = 'flex';
+                document.getElementById('modalOk').onclick = function() {
+                    document.getElementById('modalOverlay').style.display = 'none';
+                    resolve();
+                };
+            });
+        }
+        function myConfirm(msg) {
+            return new Promise(function(resolve) {
+                document.getElementById('modalMsg').textContent = msg;
+                document.getElementById('modalBtns').innerHTML = '<button class="modal-btn-cancel" id="modalCancel">取消</button><button class="modal-btn-ok" id="modalOk">确定</button>';
+                document.getElementById('modalOverlay').style.display = 'flex';
+                document.getElementById('modalOk').onclick = function() {
+                    document.getElementById('modalOverlay').style.display = 'none';
+                    resolve(true);
+                };
+                document.getElementById('modalCancel').onclick = function() {
+                    document.getElementById('modalOverlay').style.display = 'none';
+                    resolve(false);
+                };
+            });
+        }
+        // 替换全局alert/confirm
+        window.alert = function(msg) { myAlert(msg); };
+        window.confirm = function(msg) { return myConfirm(msg); };
+
         // PWA 安装
         var deferredPrompt;
         window.addEventListener('beforeinstallprompt', function(e) {
