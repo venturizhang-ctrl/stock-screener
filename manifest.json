@@ -1,0 +1,18 @@
+{
+    "name": "A股实时选股",
+    "short_name": "A股选股",
+    "description": "六步筛选捕捉A股短线机会",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#EBF3FB",
+    "theme_color": "#2C5F8A",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "img/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}
