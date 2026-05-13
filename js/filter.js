@@ -9,10 +9,10 @@ function filterByChange(stocks) {
     });
 }
 
-// 步骤2：量比 > 1.45
+// 步骤2：量比 > 1.3
 function filterByVolumeRatio(stocks) {
     return stocks.filter(function(s) {
-        return s.f10 !== null && s.f10 > 1.45;
+        return s.f10 !== null && s.f10 > 1.3;
     });
 }
 

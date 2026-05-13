@@ -300,8 +300,8 @@
                     s.f10 = sumVol > 0 ? tb.volume / (sumVol / 5) : 0;
                 }
             });
-            step2 = step1.filter(function(s) { return s.f10 > 1.45; });
-            debugLog('步骤2(量比>1.45): ' + step2.length + '只');
+            step2 = step1.filter(function(s) { return s.f10 > 1.3; });
+            debugLog('步骤2(量比>1.3): ' + step2.length + '只');
             updateStep(2, step2.length, 'completed');
 
             // 步骤3: 换手率近似
@@ -433,14 +433,14 @@
             body.innerHTML =
                 '<div class="param-row"><span class="param-step">①</span>流通市值 <b>50亿 ~ 200亿</b>（优先筛选）</div>' +
                 '<div class="param-row"><span class="param-step">②</span>涨幅 <b>3% ~ 5%</b>（收盘数据近似）</div>' +
-                '<div class="param-row"><span class="param-step">③</span>量比 <b>> 1.45</b>（日总成交量/5日均量）</div>' +
+                '<div class="param-row"><span class="param-step">③</span>量比 <b>> 1.3</b>（日总成交量/5日均量）</div>' +
                 '<div class="param-row"><span class="param-step">④</span>换手率 <b>5% ~ 10%</b>（日总换手近似）</div>' +
                 '<div class="param-row"><span class="param-step">⑤</span>均线多头 <b>MA5 > MA10 > MA20</b> 且上方无压力</div>' +
                 '<div class="param-row"><span class="param-step">⑥</span>收盘强势 <b>收盘>开盘 且 收盘>中位价</b></div>';
         } else {
             body.innerHTML =
                 '<div class="param-row"><span class="param-step">①</span>涨幅 <b>3% ~ 5%</b></div>' +
-                '<div class="param-row"><span class="param-step">②</span>量比 <b>> 1.45</b></div>' +
+                '<div class="param-row"><span class="param-step">②</span>量比 <b>> 1.3</b></div>' +
                 '<div class="param-row"><span class="param-step">③</span>换手率 <b>5% ~ 10%</b></div>' +
                 '<div class="param-row"><span class="param-step">④</span>流通市值 <b>50亿 ~ 200亿</b></div>' +
                 '<div class="param-row"><span class="param-step">⑤</span>均线多头 <b>MA5 > MA10 > MA20</b> 且上方无压力</div>' +
