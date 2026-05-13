@@ -3,14 +3,16 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-    font-size: 16px;
+    font-size: 17px;
     color: #333;
     background: #EBF3FB;
     min-height: 100vh;
-    max-width: 600px;
-    margin: 0 auto;
-    padding-bottom: 50px;
+    min-height: 100dvh;
+    margin: 0;
+    padding-bottom: 60px;
     -webkit-font-smoothing: antialiased;
+    /* 适配三星S24 2340x1080 */
+    -webkit-text-size-adjust: 100%;
 }
 
 /* ===== 顶部 ===== */
@@ -211,7 +213,11 @@ body {
 /* ===== 底部 ===== */
 .footer { text-align: center; padding: 20px; font-size: 12px; color: #ccc; }
 
-/* ===== 响应式 ===== */
-@media (min-width: 768px) {
-    body { border-left: 1px solid #E8ECF1; border-right: 1px solid #E8ECF1; }
+/* ===== 三星S24 适配 ===== */
+@media screen and (max-width: 480px) {
+    .stock-details { gap: 10px 20px; }
+    .detail-item { font-size: 14px; }
+    .stock-card { padding: 18px 16px; margin-bottom: 12px; }
+    .action-bar { padding: 16px 14px; }
+    .result-title { padding: 18px 14px; font-size: 17px; }
 }
