@@ -43,6 +43,7 @@
             <span id="lastRefresh" class="last-refresh">尚未筛选</span>
             <span id="marketStatus" class="market-status">--</span>
         </div>
+        <button id="btnInstall" class="btn-install" style="display:none;" title="添加到桌面">📲 安装</button>
     </section>
 
     <!-- 筛选参数展示 -->
@@ -147,6 +148,23 @@
                 if (key && key.startsWith('aq_hist_')) { localStorage.removeItem(key); count++; i--; }
             }
             alert('已清除 ' + count + ' 条历史缓存');
+        });
+        // PWA 安装
+        var deferredPrompt;
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('btnInstall').style.display = 'inline-block';
+        });
+        document.getElementById('btnInstall').addEventListener('click', function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function(r) {
+                    document.getElementById('btnInstall').style.display = r.outcome === 'accepted' ? 'none' : 'inline-block';
+                });
+            } else {
+                alert('请使用Chrome菜单中的"添加到主屏幕"');
+            }
         });
         // Service Worker
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
