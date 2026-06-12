@@ -78,7 +78,7 @@
         hideError(); setRefreshButton(true);
         debugLines = [];
         debugLog('=== 利弗莫尔突破信号 ===');
-        debugLog('条件: 突破' + breakDays + '日高点 + 量比>' + volRatioMin.toFixed(1) + ' + 强势收盘');
+        debugLog('条件: 突破' + breakDays + '日高点 + 量比>' + volRatioMin.toFixed(1) + ' + 收盘>最高60%');
         debugLog('时间: ' + new Date().toLocaleTimeString());
 
         try {
@@ -154,7 +154,7 @@
                     var br = checkBreakout(r.bars, today, {
                         breakDays: breakDays,
                         volRatioMin: volRatioMin,
-                        closeNearHigh: 0.90
+                        closeNearHigh: 0.60
                     });
 
                     if (br.pass) {
