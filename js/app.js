@@ -40,11 +40,10 @@
     });
 
     var volOptions = [
-        { id: 'optVol10', val: 1.0 },
-        { id: 'optVol12', val: 1.2 },
         { id: 'optVol15', val: 1.5 },
-        { id: 'optVol18', val: 1.8 },
-        { id: 'optVol20', val: 2.0 }
+        { id: 'optVol2', val: 2 },
+        { id: 'optVol3', val: 3 },
+        { id: 'optVol4', val: 4 }
     ];
     volOptions.forEach(function(opt) {
         document.getElementById(opt.id).addEventListener('change', function() {
