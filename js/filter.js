@@ -21,7 +21,7 @@ function checkBreakout(dailyBars, today, opts) {
         closeStrong: false,
         breakHigh: 0,        // N日最高
         breakPct: 0,         // 突破幅度%
-        avgVol20: 0,         // 20日均量
+        avgVolN: 0,          // N日均量
         volRatio: 0,         // 量比
         closePctOfHigh: 0,   // 收盘占最高%
         details: []
@@ -60,9 +60,9 @@ function checkBreakout(dailyBars, today, opts) {
 
     // ② 量能检查
     var volumes = pastBars.map(function(b) { return b.volume; });
-    result.avgVol20 = volumes.reduce(function(a, b) { return a + b; }, 0) / volumes.length;
-    if (today.volume > 0 && result.avgVol20 > 0) {
-        result.volRatio = today.volume / result.avgVol20;
+    result.avgVolN = volumes.reduce(function(a,b){return a+b;},0) / volumes.length;
+    if (today.volume > 0 && result.avgVolN > 0) {
+        result.volRatio = today.volume / result.avgVolN;
         if (result.volRatio >= volRatioMin) {
             result.volExplosion = true;
             result.details.push('✓ 量比' + result.volRatio.toFixed(2) + ' ≥ ' + volRatioMin);

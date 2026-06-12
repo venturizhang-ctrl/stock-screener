@@ -24,14 +24,19 @@
     }
 
     // 参数调整
-    document.getElementById('optDays20').addEventListener('change', function() {
-        breakDays = this.checked ? 20 : 10;
-        document.getElementById('paramDays').textContent = breakDays;
-    });
-    document.getElementById('optDays60').addEventListener('change', function() {
-        breakDays = this.checked ? 60 : 20;
-        document.getElementById('paramDays').textContent = breakDays;
-        if (this.checked) document.getElementById('optDays20').checked = false;
+    var dayOptions = [
+        { id: 'optDays5', days: 5 },
+        { id: 'optDays10', days: 10 },
+        { id: 'optDays20', days: 20 },
+        { id: 'optDays60', days: 60 }
+    ];
+    dayOptions.forEach(function(opt) {
+        document.getElementById(opt.id).addEventListener('change', function() {
+            if (this.checked) {
+                breakDays = opt.days;
+                document.getElementById('paramDays').textContent = breakDays;
+            }
+        });
     });
 
     // 开始
