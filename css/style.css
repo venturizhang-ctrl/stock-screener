@@ -82,7 +82,7 @@ body {
     font-size: 18px; color: #AAA; font-weight: 600;
     user-select: none;
 }
-.params-body { padding: 0 16px 14px; }
+.params-body { padding: 0 16px 14px; display: block; }
 .param-row { font-size: 18px; color: #BBB; padding: 6px 0; display: flex; align-items: center; gap: 6px; }
 .param-row b { color: #FFD54F; font-size: 20px; }
 
@@ -173,6 +173,28 @@ body {
 .next-change { font-size: 16px; font-weight: 700; }
 .next-change.up { color: #E53935; }
 .next-change.down { color: #43A047; }
+
+/* ===== 突破徽章 ===== */
+.breakout-badges {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid #333840;
+}
+.break-badge {
+    padding: 6px 12px; border-radius: 6px;
+    font-size: 15px; font-weight: 700;
+}
+.break-badge.fire { background: #3D1A1A; color: #FF6B6B; }
+.break-badge.vol { background: #1A2D3D; color: #64B5F6; }
+.break-badge.strong { background: #1A3D1A; color: #66BB6A; }
+
+/* ===== 单选按钮行 ===== */
+.radio-row {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 17px; color: #BBB; cursor: pointer;
+    margin-left: 8px;
+}
+.radio-row input[type="radio"] { width: 18px; height: 18px; accent-color: #4A90D9; }
 
 /* ===== 空状态 ===== */
 .empty-state { padding: 70px 20px; text-align: center; color: #666; }

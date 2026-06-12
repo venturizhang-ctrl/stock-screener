@@ -1,10 +1,10 @@
 /**
- * ui.js — UI渲染
+ * ui.js — 突破信号UI
  */
 
 function showLoading(text, sub) {
     document.getElementById('loadingArea').style.display = 'block';
-    document.getElementById('loadingText').textContent = text || '正在获取数据...';
+    document.getElementById('loadingText').textContent = text || '正在扫描...';
     document.getElementById('loadingSub').textContent = sub || '';
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('errorArea').style.display = 'none';
@@ -28,73 +28,52 @@ function updateMarketStatus() {
 }
 
 function updateLastRefresh(time) {
-    var el = document.getElementById('lastRefresh');
-    el.textContent = time ? '最后刷新: ' + time : '尚未筛选';
+    document.getElementById('lastRefresh').textContent = time ? '扫描于 ' + time : '尚未扫描';
 }
 
-function showResultSection(sectionId, show) {
-    document.getElementById(sectionId).style.display = show ? 'block' : 'none';
+function showResultSection(id, show) {
+    document.getElementById(id).style.display = show ? 'block' : 'none';
 }
 
-function updateResultCount(elementId, count) {
-    document.getElementById(elementId).textContent = count;
+function updateResultCount(id, count) {
+    document.getElementById(id).textContent = count;
 }
 
 function setRefreshButton(disabled) {
     var btn = document.getElementById('btnRefresh');
     btn.disabled = disabled;
-    btn.querySelector('.btn-text').textContent = disabled ? '筛选中...' : '开始筛选';
-}
-
-function updateWeekSelector(weeks) {
-    document.querySelectorAll('.week-btn').forEach(function(btn) {
-        if (parseInt(btn.getAttribute('data-weeks')) === weeks) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
+    btn.querySelector('.btn-text').textContent = disabled ? '扫描中...' : '扫描突破';
 }
 
 function renderStockList(containerId, stocks) {
     var container = document.getElementById(containerId);
     if (!stocks || stocks.length === 0) {
-        container.innerHTML = '<div class="empty-state" style="padding:20px"><p class="empty-text">无符合条件的股票</p></div>';
+        container.innerHTML = '<div class="empty-state" style="padding:20px"><p class="empty-text">无符合条件的突破信号</p><p class="empty-hint">交易时段实时扫描效果最佳</p></div>';
         return;
     }
+
     var html = '';
     stocks.forEach(function(s) {
-        var wr = s.weeklyResult;
-        var totalChange = 0;
-        if (wr && wr.weeklyChanges && wr.weeklyChanges.length > 0) {
-            var factor = 1;
-            wr.weeklyChanges.forEach(function(c) { factor *= (1 + c / 100); });
-            totalChange = (factor - 1) * 100;
-        }
-        var tcClass = totalChange >= 0 ? 'up' : 'down';
-        var tcSign = totalChange >= 0 ? '+' : '';
+        var br = s.breakResult;
+        var mktCapYi = s.nmc ? (s.nmc / 100000000).toFixed(0) : '--';
 
-        var weeklyRows = '';
-        if (wr && wr.weeklyChanges && wr.weeklyChanges.length > 0) {
-            weeklyRows = '<div class="weekly-changes">';
-            wr.weeklyChanges.forEach(function(change, idx) {
-                var wClass = change >= 0 ? 'up' : 'down';
-                var wSign = change >= 0 ? '+' : '';
-                var turnover = (wr.weeklyTurnovers && wr.weeklyTurnovers[idx]) ? wr.weeklyTurnovers[idx] : 0;
-                weeklyRows += '<span class="week-chip ' + wClass + '">周' + (idx + 1) +
-                    ' ' + wSign + change.toFixed(2) + '%' +
-                    ' 换手' + turnover.toFixed(1) + '%</span>';
-            });
-            weeklyRows += '</div>';
-        }
-
-        html += '<div class="stock-card"><div class="stock-card-header">' +
-            '<div><span class="stock-code">' + s.f12 + '</span><span class="stock-name">' + s.f14 + '</span></div>' +
-            '<span class="stock-change ' + tcClass + '">' + tcSign + totalChange.toFixed(2) + '%</span></div>' +
+        html += '<div class="stock-card">' +
+            '<div class="stock-card-header">' +
+                '<div><span class="stock-code">' + s.code + '</span>' +
+                '<span class="stock-name">' + s.name + '</span></div>' +
+                '<span class="stock-change up">+' + s.change.toFixed(2) + '%</span>' +
+            '</div>' +
             '<div class="stock-details">' +
-            '<div class="detail-item"><span class="detail-label">最新价</span><span class="detail-value">' + (s.f2 ? s.f2.toFixed(2) : '--') + '</span></div>' +
-            '<div class="detail-item"><span class="detail-label">流通市值</span><span class="detail-value">' + (s.nmcYi || '--') + '亿</span></div>' +
-            '</div>' + weeklyRows + '</div>';
+                '<div class="detail-item"><span class="detail-label">现价</span><span class="detail-value">' + s.price.toFixed(2) + '</span></div>' +
+                '<div class="detail-item"><span class="detail-label">换手率</span><span class="detail-value">' + s.turnover.toFixed(2) + '%</span></div>' +
+                '<div class="detail-item"><span class="detail-label">流通市值</span><span class="detail-value">' + mktCapYi + '亿</span></div>' +
+            '</div>' +
+            '<div class="breakout-badges">' +
+                '<span class="break-badge fire">突破' + (br.breakHigh ? br.breakPct.toFixed(2) : '--') + '%</span>' +
+                '<span class="break-badge vol">量比 ' + (br.volRatio ? br.volRatio.toFixed(2) : '--') + '</span>' +
+                '<span class="break-badge strong">强势 ' + (br.closePctOfHigh ? (br.closePctOfHigh*100).toFixed(0) : '--') + '%</span>' +
+            '</div>' +
+        '</div>';
     });
     container.innerHTML = html;
 }
