@@ -40,6 +40,7 @@
     });
 
     var volOptions = [
+        { id: 'optVol10', val: 1.0 },
         { id: 'optVol12', val: 1.2 },
         { id: 'optVol15', val: 1.5 },
         { id: 'optVol18', val: 1.8 },
@@ -78,7 +79,7 @@
         hideError(); setRefreshButton(true);
         debugLines = [];
         debugLog('=== 利弗莫尔突破信号 ===');
-        debugLog('条件: 突破' + breakDays + '日高点 + 量比>' + volRatioMin.toFixed(1) + ' + 收盘>最高60%');
+        debugLog('条件: 突破' + breakDays + '日高点 + 量比>' + volRatioMin.toFixed(1) + ' + 收盘>最高20%');
         debugLog('时间: ' + new Date().toLocaleTimeString());
 
         try {
@@ -154,7 +155,7 @@
                     var br = checkBreakout(r.bars, today, {
                         breakDays: breakDays,
                         volRatioMin: volRatioMin,
-                        closeNearHigh: 0.60
+                        closeNearHigh: 0.20
                     });
 
                     if (br.pass) {

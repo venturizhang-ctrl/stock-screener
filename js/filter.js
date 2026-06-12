@@ -37,8 +37,8 @@ function checkBreakout(dailyBars, today, opts) {
         return result;
     }
 
-    // 不含今天，取过去N日
-    var pastBars = dailyBars.slice(-breakDays);
+    // 不含今天（日K线最后一条是今天），取过去N日
+    var pastBars = dailyBars.slice(-(breakDays + 1), -1);
     var highs = pastBars.map(function(b) { return b.high; });
     result.breakHigh = Math.max.apply(null, highs);
 
