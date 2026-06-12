@@ -15,7 +15,7 @@ body {
     -webkit-text-size-adjust: 100%;
 }
 /* 确保所有section全宽 */
-.header, .week-selector, .action-bar,
+.header, .mode-switch, .week-selector, .action-bar,
 .loading-area, .error-area, .debug-area, .result-section,
 .empty-state, .footer, .params-bar {
     width: 100%;
@@ -30,6 +30,21 @@ body {
 }
 .header-title { font-size: 24px; font-weight: 700; letter-spacing: 2px; }
 .header-subtitle { font-size: 14px; opacity: 0.75; margin-top: 4px; }
+
+/* ===== 模式切换 ===== */
+.mode-switch {
+    display: flex; gap: 0; background: #1A1D23;
+    padding: 6px 10px;
+}
+.mode-tab {
+    flex: 1; padding: 18px 0; text-align: center;
+    font-size: 22px; font-weight: 800; text-decoration: none;
+    border-radius: 12px;
+    background: #252830; color: #666;
+    transition: all 0.2s;
+}
+.mode-tab.active { background: #4A90D9; color: #fff; }
+.mode-tab + .mode-tab { margin-left: 8px; }
 
 /* ===== 周数选择 ===== */
 .week-selector {
