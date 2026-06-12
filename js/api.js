@@ -18,29 +18,46 @@ function fetchSinaPage(pageNum) {
 // 获取涨幅>3%的所有股票（分页，涨到<3%停止）
 async function getRisingStocks(debugFn) {
     var stocks = [];
-    for (var p = 1; p <= 30; p++) { // 最多30页=3000只，通常到不了
+    var pageErrors = 0;
+    for (var p = 1; p <= 30; p++) {
         var data = null;
+        var lastErr = '';
         for (var retry = 0; retry < 3; retry++) {
             try {
                 data = await fetchSinaPage(p);
                 if (data && data.length > 0) break;
+                lastErr = '空响应';
                 if (retry < 2) await delay(1000);
             } catch (e) {
+                lastErr = e.message;
                 if (retry < 2) await delay(1000);
             }
         }
-        if (!data || data.length === 0) break;
+        if (!data || data.length === 0) {
+            pageErrors++;
+            if (debugFn) debugFn('第' + p + '页失败(' + lastErr + ')，连续' + pageErrors + '页');
+            if (pageErrors >= 3) {
+                if (debugFn) debugFn('连续3页失败，停止。共' + stocks.length + '只候选');
+                break;
+            }
+            continue;
+        }
+        pageErrors = 0;
+
+        // 第一页第一条打日志
+        if (p === 1 && debugFn) {
+            debugFn('第1页首条: ' + data[0].code + ' ' + data[0].name + ' 涨幅' + data[0].changepercent + '%');
+        }
 
         for (var i = 0; i < data.length; i++) {
             var s = data[i];
             var change = parseFloat(s.changepercent) || 0;
-            if (change < 3) { // 涨幅低于3%停止
-                if (debugFn) debugFn('涨幅<3%，停止扫描。共' + stocks.length + '只候选');
+            if (change < 3) {
+                if (debugFn) debugFn('涨幅<3%，停止。共' + stocks.length + '只候选');
                 return stocks;
             }
             stocks.push({
-                code: s.code,
-                name: s.name,
+                code: s.code, name: s.name,
                 price: parseFloat(s.trade) || 0,
                 open: parseFloat(s.open) || 0,
                 high: parseFloat(s.high) || 0,
@@ -56,6 +73,9 @@ async function getRisingStocks(debugFn) {
         }
         if (debugFn) debugFn('第' + p + '页: ' + data.length + '只，候选累计' + stocks.length);
         await delay(200);
+    }
+    if (debugFn && stocks.length === 0) {
+        debugFn('⚠ 未找到涨幅>3%的股票。可能是非交易时段，数据反映的是收盘状态。');
     }
     return stocks;
 }
