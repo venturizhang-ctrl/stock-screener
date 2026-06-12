@@ -10,7 +10,7 @@
     <meta name="application-name" content="短线纪律">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="screen-orientation" content="portrait">
-    <title>短线纪律 - A股选股</title>
+    <title>短线纪律 - A股周线选股</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/svg+xml" href="img/icon.svg">
@@ -18,22 +18,16 @@
 <body>
     <!-- 顶部 -->
     <header class="header">
-        <h1 class="header-title">A股实时选股</h1>
-        <p class="header-subtitle">六步筛选 · 捕捉短线机会</p>
+        <h1 class="header-title">A股周线选股</h1>
+        <p class="header-subtitle">连续周K线向上 · 捕捉趋势机会</p>
     </header>
 
-    <!-- 模式切换 -->
-    <section class="mode-bar">
-        <button id="btnRealTime" class="mode-btn active">实时筛选</button>
-        <button id="btnHistory" class="mode-btn">历史查询</button>
-    </section>
-
-    <!-- 历史日期选择 -->
-    <section id="historyDateBar" class="history-bar" style="display:none;">
-        <label class="history-label">选择交易日：</label>
-        <input type="date" id="historyDate" class="history-date">
-        <span id="historyDateHint" class="history-hint"></span>
-        <button id="btnClearCache" class="btn-clear-cache" title="清除历史查询缓存">🗑</button>
+    <!-- 周数选择 -->
+    <section class="week-selector">
+        <span class="week-selector-label">筛选条件：连续</span>
+        <button class="week-btn active" data-weeks="3">3 周 ↑</button>
+        <button class="week-btn" data-weeks="4">4 周 ↑</button>
+        <button class="week-btn" data-weeks="5">5 周 ↑</button>
     </section>
 
     <!-- 操作栏 -->
@@ -49,79 +43,52 @@
         <button id="btnInstall" class="btn-install" style="display:none;" title="添加到桌面">📲 安装</button>
     </section>
 
-    <!-- 筛选参数展示 -->
+    <!-- 筛选参数 -->
     <section class="params-bar" id="paramsBar">
-        <div class="params-header" id="paramsToggle">
-            <span>筛选参数</span>
-            <span class="params-arrow">▸</span>
-        </div>
-        <div class="params-body" id="paramsBody" style="display:none;">
-            <div class="param-row"><span class="param-step">①</span>涨幅 <b>3% ~ 5%</b></div>
-            <div class="param-row"><span class="param-step">②</span>量比 <b>> 1.3</b></div>
-            <div class="param-row"><span class="param-step">③</span>换手率 <b>5% ~ 10%</b></div>
-            <div class="param-row"><span class="param-step">④</span>流通市值 <b>50亿 ~ 200亿</b></div>
-            <div class="param-row"><span class="param-step">⑤</span>均线多头 <b>MA5 > MA10 > MA20</b> 且 上方无压力</div>
-            <div class="param-row"><span class="param-step">⑥</span>100%时间在均价线上方 <b>（剔除开盘2min）</b></div>
+        <div class="params-header"><span>📊 筛选漏斗</span></div>
+        <div class="params-body" id="paramsBody">
+            <div class="param-row">连续1周向上：<b id="paramCnt1">--</b> 只</div>
+            <div class="param-row">连续2周向上：<b id="paramCnt2">--</b> 只</div>
+            <div class="param-row">连续3周向上：<b id="paramCnt3">--</b> 只</div>
+            <div class="param-row" id="paramRow4" style="display:none;">连续4周向上：<b id="paramCnt4">--</b> 只</div>
+            <div class="param-row" id="paramRow5" style="display:none;">连续5周向上：<b id="paramCnt5">--</b> 只</div>
+            <div class="param-row" style="color:#aaa;font-size:12px;">数据来源：新浪财经 · 周K线</div>
         </div>
     </section>
 
-    <!-- 进度指示器 -->
-    <section class="progress-bar">
-        <div class="progress-steps">
-            <div class="step" data-step="1"><div class="step-dot"></div><span class="step-label">涨幅3-5%</span><span class="step-count"></span></div>
-            <div class="step-connector"></div>
-            <div class="step" data-step="2"><div class="step-dot"></div><span class="step-label">量比>1.3</span><span class="step-count"></span></div>
-            <div class="step-connector"></div>
-            <div class="step" data-step="3"><div class="step-dot"></div><span class="step-label">换手5-10%</span><span class="step-count"></span></div>
-            <div class="step-connector"></div>
-            <div class="step" data-step="4"><div class="step-dot"></div><span class="step-label">市值50-200亿</span><span class="step-count"></span></div>
-            <div class="step-connector"></div>
-            <div class="step" data-step="5"><div class="step-dot"></div><span class="step-label">均线多头</span><span class="step-count"></span></div>
-            <div class="step-connector"></div>
-            <div class="step" data-step="6"><div class="step-dot"></div><span class="step-label">100%均价线上</span><span class="step-count"></span></div>
-        </div>
-    </section>
-
-    <!-- 加载状态 -->
+    <!-- 加载 -->
     <section id="loadingArea" class="loading-area" style="display:none;">
         <div class="spinner"></div>
         <p id="loadingText" class="loading-text">正在获取数据...</p>
         <p id="loadingSub" class="loading-sub"></p>
     </section>
 
-    <!-- 错误提示 -->
+    <!-- 错误 -->
     <section id="errorArea" class="error-area" style="display:none;">
         <p id="errorText" class="error-text"></p>
     </section>
 
-    <!-- 调试信息 -->
-    <section id="debugArea" class="debug-area" style="display:none;">
-        <div class="debug-header" id="debugToggle">调试信息 ▸</div>
-        <pre id="debugText" class="debug-text" style="display:none;"></pre>
+    <!-- 调试 -->
+    <section id="debugArea" class="debug-area">
+        <div class="debug-header">🔍 调试信息</div>
+        <pre id="debugText" class="debug-text"></pre>
     </section>
 
-    <!-- 结果区域：步骤5 -->
-    <section id="resultStep5" class="result-section" style="display:none;">
-        <h2 class="result-title"><span class="result-icon">📋</span> 步骤5结果<span class="result-badge">均线多头 + 无压力</span></h2>
-        <p class="result-summary">共 <strong id="countStep5">0</strong> 只</p>
-        <div id="listStep5" class="stock-list"></div>
-    </section>
-
-    <!-- 结果区域：步骤6 -->
-    <section id="resultStep6" class="result-section" style="display:none;">
-        <h2 class="result-title"><span class="result-icon">⭐</span> 步骤6结果<span class="result-badge result-badge-best">最强标的</span></h2>
-        <p class="result-summary">共 <strong id="countStep6">0</strong> 只</p>
-        <div id="listStep6" class="stock-list"></div>
+    <!-- 结果 -->
+    <section id="resultArea" class="result-section" style="display:none;">
+        <h2 class="result-title"><span class="result-icon">⭐</span> 筛选结果<span class="result-badge result-badge-best" id="resultBadge">连续N周向上</span></h2>
+        <p class="result-summary">共 <strong id="countResult">0</strong> 只</p>
+        <div id="listResult" class="stock-list"></div>
     </section>
 
     <!-- 空状态 -->
     <section id="emptyState" class="empty-state">
         <div class="empty-icon">📊</div>
-        <p class="empty-text" id="emptyMain">点击"开始筛选"查看符合条件的股票</p>
+        <p class="empty-text" id="emptyMain">点击"开始筛选"查看连续周线向上的股票</p>
         <p class="empty-hint">数据来源：新浪财经 + 腾讯行情</p>
     </section>
 
-    <!-- 自定义弹窗 -->
+    <!-- 弹窗 -->
     <section id="modalOverlay" class="modal-overlay" style="display:none;">
         <div class="modal-box">
             <p id="modalMsg" class="modal-msg"></p>
@@ -138,34 +105,6 @@
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // 筛选参数折叠
-        document.getElementById('paramsToggle').addEventListener('click', function() {
-            var body = document.getElementById('paramsBody');
-            var arrow = this.querySelector('.params-arrow');
-            if (body.style.display === 'none') { body.style.display = 'block'; arrow.textContent = '▾'; }
-            else { body.style.display = 'none'; arrow.textContent = '▸'; }
-        });
-        // 调试信息折叠
-        document.getElementById('debugToggle').addEventListener('click', function() {
-            var text = document.getElementById('debugText');
-            if (text.style.display === 'none') { text.style.display = 'block'; this.textContent = '调试信息 ▾'; }
-            else { text.style.display = 'none'; this.textContent = '调试信息 ▸'; }
-        });
-        // 清除缓存（仅所选日期）
-        document.getElementById('btnClearCache').addEventListener('click', async function() {
-            var d = document.getElementById('historyDate').value;
-            if (!d) { await myAlert('请先选择日期'); return; }
-            var key = 'aq_hist_' + d;
-            if (localStorage.getItem(key)) {
-                if (await myConfirm('是否清除 ' + d + ' 历史数据？')) {
-                    localStorage.removeItem(key);
-                    await myAlert(d + ' 缓存已清除');
-                }
-            } else {
-                await myAlert(d + ' 无缓存数据');
-            }
-        });
-        // 自定义弹窗（隐藏Chrome来源显示）
         function myAlert(msg) {
             return new Promise(function(resolve) {
                 document.getElementById('modalMsg').textContent = msg;
@@ -192,11 +131,6 @@
                 };
             });
         }
-        // 替换全局alert/confirm
-        window.alert = function(msg) { myAlert(msg); };
-        window.confirm = function(msg) { return myConfirm(msg); };
-
-        // PWA 安装
         var deferredPrompt;
         window.addEventListener('beforeinstallprompt', function(e) {
             e.preventDefault();
@@ -204,16 +138,8 @@
             document.getElementById('btnInstall').style.display = 'inline-block';
         });
         document.getElementById('btnInstall').addEventListener('click', function() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(function(r) {
-                    document.getElementById('btnInstall').style.display = r.outcome === 'accepted' ? 'none' : 'inline-block';
-                });
-            } else {
-                alert('请使用Chrome菜单中的"添加到主屏幕"');
-            }
+            if (deferredPrompt) { deferredPrompt.prompt(); }
         });
-        // Service Worker
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
     </script>
 </body>

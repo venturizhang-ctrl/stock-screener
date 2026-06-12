@@ -1,5 +1,5 @@
 /**
- * ui.js — UI渲染模块
+ * ui.js — UI渲染
  */
 
 function showLoading(text, sub) {
@@ -32,66 +32,6 @@ function updateLastRefresh(time) {
     el.textContent = time ? '最后刷新: ' + time : '尚未筛选';
 }
 
-function resetProgress() {
-    document.querySelectorAll('.step').forEach(function(el) { el.classList.remove('completed', 'active'); });
-    document.querySelectorAll('.step-count').forEach(function(el) { el.textContent = ''; });
-    document.querySelectorAll('.step-connector').forEach(function(el) { el.classList.remove('done'); });
-}
-
-function updateStep(stepNum, count, status) {
-    var stepEl = document.querySelector('.step[data-step="' + stepNum + '"]');
-    var connectorEl = stepNum > 1 ? stepEl.previousElementSibling : null;
-    if (status === 'active') { stepEl.classList.add('active'); stepEl.classList.remove('completed'); }
-    else if (status === 'completed') {
-        stepEl.classList.remove('active'); stepEl.classList.add('completed');
-        if (connectorEl) connectorEl.classList.add('done');
-    }
-    if (count !== undefined && count !== null) stepEl.querySelector('.step-count').textContent = count;
-}
-
-function renderStockList(containerId, stocks) {
-    var container = document.getElementById(containerId);
-    if (!stocks || stocks.length === 0) {
-        container.innerHTML = '<div class="empty-state" style="padding:20px"><p class="empty-text">无符合条件的股票</p></div>';
-        return;
-    }
-    var html = '';
-    stocks.forEach(function(s) {
-        var cv = s.f3, cClass = cv >= 0 ? 'up' : 'down', cSign = cv >= 0 ? '+' : '';
-        var mktCapYi = (s.f21 / 100000000).toFixed(0);
-        var ndHtml = '';
-        if (s.nextDayChange !== undefined) {
-            var ndc = s.nextDayChange;
-            var ndClass = ndc >= 0 ? 'up' : 'down', ndSign = ndc >= 0 ? '+' : '';
-            var ndLabel = ndc >= 0 ? '次交易日9:30-10:00最高涨幅' : '次交易日9:30-10:00最小跌幅';
-            ndHtml += '<div class="detail-item detail-next"><span class="detail-label">' + ndLabel + '</span>' +
-                '<span class="detail-value next-change ' + ndClass + '">' + ndSign + ndc.toFixed(2) + '%</span></div>';
-            if (s.nextDayCloseChange !== undefined) {
-                if (s.nextDayCloseChange === null) {
-                    ndHtml += '<div class="detail-item detail-next"><span class="detail-label">次交易日收盘</span>' +
-                        '<span class="detail-value" style="color:#888">未收盘</span></div>';
-                } else {
-                    var ndcc = s.nextDayCloseChange;
-                    var ndccClass = ndcc >= 0 ? 'up' : 'down', ndccSign = ndcc >= 0 ? '+' : '';
-                    var ndccLabel = ndcc >= 0 ? '次交易日收盘涨幅' : '次交易日收盘跌幅';
-                    ndHtml += '<div class="detail-item detail-next"><span class="detail-label">' + ndccLabel + '</span>' +
-                        '<span class="detail-value next-change ' + ndccClass + '">' + ndccSign + ndcc.toFixed(2) + '%</span></div>';
-                }
-            }
-        }
-        html += '<div class="stock-card"><div class="stock-card-header">' +
-            '<div><span class="stock-code">' + s.f12 + '</span><span class="stock-name">' + s.f14 + '</span></div>' +
-            '<span class="stock-change ' + cClass + '">' + cSign + cv.toFixed(2) + '%</span></div>' +
-            '<div class="stock-details">' +
-            '<div class="detail-item"><span class="detail-label">最新价</span><span class="detail-value">' + (s.f2 ? s.f2.toFixed(2) : '--') + '</span></div>' +
-            '<div class="detail-item"><span class="detail-label">量比</span><span class="detail-value">' + (s.f10 ? s.f10.toFixed(2) : '--') + '</span></div>' +
-            '<div class="detail-item"><span class="detail-label">换手率</span><span class="detail-value">' + (s.f8 ? s.f8.toFixed(2) : '--') + '%</span></div>' +
-            '<div class="detail-item"><span class="detail-label">流通市值</span><span class="detail-value">' + mktCapYi + '亿</span></div>' +
-            ndHtml + '</div></div>';
-    });
-    container.innerHTML = html;
-}
-
 function showResultSection(sectionId, show) {
     document.getElementById(sectionId).style.display = show ? 'block' : 'none';
 }
@@ -104,4 +44,57 @@ function setRefreshButton(disabled) {
     var btn = document.getElementById('btnRefresh');
     btn.disabled = disabled;
     btn.querySelector('.btn-text').textContent = disabled ? '筛选中...' : '开始筛选';
+}
+
+function updateWeekSelector(weeks) {
+    document.querySelectorAll('.week-btn').forEach(function(btn) {
+        if (parseInt(btn.getAttribute('data-weeks')) === weeks) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
+function renderStockList(containerId, stocks) {
+    var container = document.getElementById(containerId);
+    if (!stocks || stocks.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="padding:20px"><p class="empty-text">无符合条件的股票</p></div>';
+        return;
+    }
+    var html = '';
+    stocks.forEach(function(s) {
+        var wr = s.weeklyResult;
+        var totalChange = 0;
+        if (wr && wr.weeklyChanges && wr.weeklyChanges.length > 0) {
+            var factor = 1;
+            wr.weeklyChanges.forEach(function(c) { factor *= (1 + c / 100); });
+            totalChange = (factor - 1) * 100;
+        }
+        var tcClass = totalChange >= 0 ? 'up' : 'down';
+        var tcSign = totalChange >= 0 ? '+' : '';
+
+        var weeklyRows = '';
+        if (wr && wr.weeklyChanges && wr.weeklyChanges.length > 0) {
+            weeklyRows = '<div class="weekly-changes">';
+            wr.weeklyChanges.forEach(function(change, idx) {
+                var wClass = change >= 0 ? 'up' : 'down';
+                var wSign = change >= 0 ? '+' : '';
+                var turnover = (wr.weeklyTurnovers && wr.weeklyTurnovers[idx]) ? wr.weeklyTurnovers[idx] : 0;
+                weeklyRows += '<span class="week-chip ' + wClass + '">周' + (idx + 1) +
+                    ' ' + wSign + change.toFixed(2) + '%' +
+                    ' 换手' + turnover.toFixed(1) + '%</span>';
+            });
+            weeklyRows += '</div>';
+        }
+
+        html += '<div class="stock-card"><div class="stock-card-header">' +
+            '<div><span class="stock-code">' + s.f12 + '</span><span class="stock-name">' + s.f14 + '</span></div>' +
+            '<span class="stock-change ' + tcClass + '">' + tcSign + totalChange.toFixed(2) + '%</span></div>' +
+            '<div class="stock-details">' +
+            '<div class="detail-item"><span class="detail-label">最新价</span><span class="detail-value">' + (s.f2 ? s.f2.toFixed(2) : '--') + '</span></div>' +
+            '<div class="detail-item"><span class="detail-label">流通市值</span><span class="detail-value">' + (s.nmcYi || '--') + '亿</span></div>' +
+            '</div>' + weeklyRows + '</div>';
+    });
+    container.innerHTML = html;
 }

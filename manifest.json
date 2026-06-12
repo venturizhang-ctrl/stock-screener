@@ -1,7 +1,7 @@
 {
     "name": "短线纪律 - A股选股",
     "short_name": "短线纪律",
-    "description": "六步筛选捕捉A股短线机会",
+    "description": "连续周线向上筛选A股趋势机会",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#EBF3FB",
