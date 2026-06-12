@@ -12,7 +12,7 @@
 
     // 可调参数
     var breakDays = 20;       // 突破N日高点
-    var volRatioMin = 2.0;    // 量比阈值
+    var volRatioMin = 1.5;    // 量比阈值
     var changeMin = 3.0;      // 最低涨幅
 
     var debugLines = [];
@@ -39,6 +39,18 @@
         });
     });
 
+    var volOptions = [
+        { id: 'optVol12', val: 1.2 },
+        { id: 'optVol15', val: 1.5 },
+        { id: 'optVol18', val: 1.8 },
+        { id: 'optVol20', val: 2.0 }
+    ];
+    volOptions.forEach(function(opt) {
+        document.getElementById(opt.id).addEventListener('change', function() {
+            if (this.checked) volRatioMin = opt.val;
+        });
+    });
+
     // 开始
     document.getElementById('btnRefresh').addEventListener('click', runScreening);
 
@@ -54,7 +66,7 @@
         hideError(); setRefreshButton(true);
         debugLines = [];
         debugLog('=== 利弗莫尔突破信号 ===');
-        debugLog('条件: 突破' + breakDays + '日高点 + 量比>' + volRatioMin + ' + 强势收盘');
+        debugLog('条件: 突破' + breakDays + '日高点 + 量比>' + volRatioMin.toFixed(1) + ' + 强势收盘');
         debugLog('时间: ' + new Date().toLocaleTimeString());
 
         try {

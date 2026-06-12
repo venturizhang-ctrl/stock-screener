@@ -36,7 +36,13 @@
                 <label class="radio-row"><input type="radio" name="breakDays" id="optDays20" checked> 20日</label>
                 <label class="radio-row"><input type="radio" name="breakDays" id="optDays60"> 60日</label>
             </div>
-            <div class="param-row">量比 = 今日量 ÷ <span id="paramDays">20</span>日均量，阈值 <b>> 2.0</b></div>
+            <div class="param-row">
+                <span>量比阈值：</span>
+                <label class="radio-row"><input type="radio" name="volRatio" id="optVol12"> 1.2</label>
+                <label class="radio-row"><input type="radio" name="volRatio" id="optVol15" checked> 1.5</label>
+                <label class="radio-row"><input type="radio" name="volRatio" id="optVol18"> 1.8</label>
+                <label class="radio-row"><input type="radio" name="volRatio" id="optVol20"> 2.0</label>
+            </div>
             <div class="param-row">涨幅下限：<b>> 3%</b>　换手下限：<b>> 2%</b></div>
             <div class="param-row" style="color:#777;font-size:14px;">突破N日高点 + 量比>2 + 收盘>最高90%</div>
         </div>
