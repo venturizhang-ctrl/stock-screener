@@ -4,8 +4,8 @@
     "description": "连续周线向上筛选A股趋势机会",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#EBF3FB",
-    "theme_color": "#2C5F8A",
+    "background_color": "#1A1D23",
+    "theme_color": "#1A1D23",
     "orientation": "portrait",
     "icons": [
         {
