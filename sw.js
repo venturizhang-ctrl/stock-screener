@@ -1,5 +1,5 @@
 // Service Worker — 网络优先策略
-var CACHE = 'aq-stocks-v3';
+var CACHE = 'aq-stocks-v4';
 
 self.addEventListener('install', function(e) {
     self.skipWaiting();
