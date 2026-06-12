@@ -33,18 +33,23 @@ body {
 
 /* ===== 模式切换 ===== */
 .mode-switch {
-    display: flex; gap: 0; background: #1A1D23;
-    padding: 6px 10px;
+    display: flex; gap: 10px; background: #1A1D23;
+    padding: 10px 12px;
 }
 .mode-tab {
-    flex: 1; padding: 18px 0; text-align: center;
-    font-size: 22px; font-weight: 800; text-decoration: none;
-    border-radius: 12px;
-    background: #252830; color: #666;
+    flex: 1; padding: 24px 0; text-align: center;
+    font-size: 33px; font-weight: 800; text-decoration: none;
+    border-radius: 14px; border: 2px solid #4A5568;
+    background: #252830; color: #777;
     transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
-.mode-tab.active { background: #4A90D9; color: #fff; }
-.mode-tab + .mode-tab { margin-left: 8px; }
+.mode-tab.active {
+    background: #4A90D9; color: #fff;
+    border-color: #4A90D9;
+    box-shadow: 0 4px 16px rgba(74,144,217,0.4);
+}
+.mode-tab:active { transform: scale(0.96); }
 
 /* ===== 周数选择 ===== */
 .week-selector {
