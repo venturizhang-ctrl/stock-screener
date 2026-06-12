@@ -25,6 +25,7 @@
 
     // 参数调整
     var dayOptions = [
+        { id: 'optDaysOff', days: 0 },
         { id: 'optDays5', days: 5 },
         { id: 'optDays10', days: 10 },
         { id: 'optDays20', days: 20 },
@@ -78,7 +79,7 @@
         hideError(); setRefreshButton(true);
         debugLines = [];
         debugLog('=== 利弗莫尔突破信号 ===');
-        debugLog('条件: 突破' + breakDays + '日高点 + 量比>' + volRatioMin.toFixed(1) + ' + 收盘>最高20%');
+        debugLog('条件: 突破' + (breakDays > 0 ? breakDays + '日高点' : '(关闭)') + ' + 量比>' + volRatioMin.toFixed(1) + ' + 收盘>最高20%');
         debugLog('时间: ' + new Date().toLocaleTimeString());
 
         try {

@@ -32,33 +32,39 @@ function checkBreakout(dailyBars, today, opts) {
     var volRatioMin = opts.volRatioMin || 2.0;
     var closeNearHigh = opts.closeNearHigh || 0.90;
 
-    if (!dailyBars || dailyBars.length < breakDays) {
-        result.details.push('日K线不足' + breakDays + '条');
-        return result;
-    }
-
-    // 不含今天（日K线最后一条是今天），取过去N日
-    var pastBars = dailyBars.slice(-(breakDays + 1), -1);
-    var highs = pastBars.map(function(b) { return b.high; });
-    result.breakHigh = Math.max.apply(null, highs);
-
-    // ① 突破检查
+    // ① 突破检查（breakDays=0 时跳过）
     var todayHigh = today.high || today.price;
-    if (todayHigh > result.breakHigh) {
-        result.highBreak = true;
-        result.breakPct = (todayHigh - result.breakHigh) / result.breakHigh * 100;
-        result.details.push(
-            '✓ 突破! 今高' + todayHigh.toFixed(2) + ' > ' + breakDays +
-            '日高' + result.breakHigh.toFixed(2) + ' (+' + result.breakPct.toFixed(2) + '%)'
-        );
+    if (breakDays > 0) {
+        if (!dailyBars || dailyBars.length < breakDays) {
+            result.details.push('日K线不足' + breakDays + '条');
+            return result;
+        }
+        // 不含今天（日K线最后一条是今天），取过去N日
+        var pastBars = dailyBars.slice(-(breakDays + 1), -1);
+        var highs = pastBars.map(function(b) { return b.high; });
+        result.breakHigh = Math.max.apply(null, highs);
+
+        if (todayHigh > result.breakHigh) {
+            result.highBreak = true;
+            result.breakPct = (todayHigh - result.breakHigh) / result.breakHigh * 100;
+            result.details.push(
+                '✓ 突破! 今高' + todayHigh.toFixed(2) + ' > ' + breakDays +
+                '日高' + result.breakHigh.toFixed(2) + ' (+' + result.breakPct.toFixed(2) + '%)'
+            );
+        } else {
+            result.details.push(
+                '✗ 未突破 今高' + todayHigh.toFixed(2) + ' ≤ ' + breakDays +
+                '日高' + result.breakHigh.toFixed(2)
+            );
+        }
     } else {
-        result.details.push(
-            '✗ 未突破 今高' + todayHigh.toFixed(2) + ' ≤ ' + breakDays +
-            '日高' + result.breakHigh.toFixed(2)
-        );
+        result.highBreak = true; // 关闭时默认通过
+        result.details.push('— 突破检查已关闭');
     }
 
-    // ② 量能检查
+    // ② 量能检查（用最近20日作为基准，不受突破天数影响）
+    var volDays = 20;
+    var pastBars = dailyBars.slice(-(volDays + 1), -1);
     var volumes = pastBars.map(function(b) { return b.volume; });
     result.avgVolN = volumes.reduce(function(a,b){return a+b;},0) / volumes.length;
     if (today.volume > 0 && result.avgVolN > 0) {
