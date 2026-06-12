@@ -13,7 +13,7 @@
     // 可调参数
     var breakDays = 20;       // 突破N日高点
     var volRatioMin = 1.5;    // 量比阈值
-    var changeMin = 3.0;      // 最低涨幅
+    var changeMin = 3.0;      // 最低涨幅，运行时从radio读取
 
     var debugLines = [];
     function debugLog(msg) {
@@ -51,6 +51,18 @@
         });
     });
 
+    var chgOptions = [
+        { id: 'optChg1', val: 1 },
+        { id: 'optChg2', val: 2 },
+        { id: 'optChg3', val: 3 },
+        { id: 'optChg5', val: 5 }
+    ];
+    chgOptions.forEach(function(opt) {
+        document.getElementById(opt.id).addEventListener('change', function() {
+            if (this.checked) changeMin = opt.val;
+        });
+    });
+
     // 开始
     document.getElementById('btnRefresh').addEventListener('click', runScreening);
 
@@ -72,8 +84,8 @@
         try {
             // ====== 阶段1：实时扫描涨幅榜 ======
             showLoading('扫描涨幅榜...', '涨幅>' + changeMin + '% + 换手>2%');
-            var candidates = await getRisingStocks(debugLog);
-            debugLog('阶段1 候选: ' + candidates.length + '只 (涨幅>' + changeMin + '%)');
+            var candidates = await getRisingStocks(debugLog, changeMin);
+            debugLog('阶段1 候选: ' + candidates.length + '只 (涨幅>' + changeMin.toFixed(0) + '%)');
 
             if (candidates.length === 0) {
                 debugLog('无候选，停止');

@@ -16,7 +16,8 @@ function fetchSinaPage(pageNum) {
 }
 
 // 获取涨幅>3%的所有股票（分页，涨到<3%停止）
-async function getRisingStocks(debugFn) {
+async function getRisingStocks(debugFn, minChange) {
+    minChange = minChange || 3;
     var stocks = [];
     var pageErrors = 0;
     for (var p = 1; p <= 30; p++) {
@@ -52,8 +53,8 @@ async function getRisingStocks(debugFn) {
         for (var i = 0; i < data.length; i++) {
             var s = data[i];
             var change = parseFloat(s.changepercent) || 0;
-            if (change < 3) {
-                if (debugFn) debugFn('涨幅<3%，停止。共' + stocks.length + '只候选');
+            if (change < minChange) {
+                if (debugFn) debugFn('涨幅<' + minChange + '%，停止。共' + stocks.length + '只候选');
                 return stocks;
             }
             stocks.push({
@@ -75,7 +76,7 @@ async function getRisingStocks(debugFn) {
         await delay(200);
     }
     if (debugFn && stocks.length === 0) {
-        debugFn('⚠ 未找到涨幅>3%的股票。可能是非交易时段，数据反映的是收盘状态。');
+        debugFn('⚠ 未找到涨幅>' + minChange + '%的股票。可尝试降低涨幅下限。');
     }
     return stocks;
 }
