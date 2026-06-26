@@ -313,14 +313,8 @@ body {
     border: 1px solid #3A1A3E;
 }
 
-/* ===== 6标签模式适配 ===== */
-.mode-tab {
-    padding: 8px 0;
-    font-size: 12px;
-    border-radius: 6px;
-    border-width: 1px;
-}
-.mode-switch { gap: 3px; }
+/* ===== 双标签模式（仅周线+VPA）===== */
+.mode-switch { gap: 10px; }
 
 /* ===== VPA 量价分析 ===== */
 .section-label {
@@ -361,11 +355,3 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-size: 16px; color: #CCC; margin: 0 0 4px; }
 .loading-sub { font-size: 13px; color: #777; margin: 0; }
-
-/* ===== 7标签模式适配（加了VPA）===== */
-.mode-tab {
-    padding: 7px 0;
-    font-size: 11px;
-    border-radius: 5px;
-    border-width: 1px;
-}
