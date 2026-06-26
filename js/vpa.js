@@ -60,7 +60,7 @@
         var fields = 'f2,f3,f5,f8,f12,f14,f15,f16,f17,f20,f21';
         var fs = 'm:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23'; // 沪深京A股
         var url = 'https://push2.eastmoney.com/api/qt/clist/get' +
-            '?cb=&fid=f3&po=1&pz=100&pn=' + pageNum +
+            '?cb=&fid=f8&po=1&pz=100&pn=' + pageNum +
             '&np=1&fltt=2&invt=2&fs=' + encodeURIComponent(fs) +
             '&fields=' + fields;
         return fetch(url).then(function(res) {
@@ -101,14 +101,17 @@
             // 第一页打印样本
             if (p === 1 && debugFn) {
                 var s0 = data.diff[0];
-                debugFn('第1页首条: ' + s0.f12 + ' ' + s0.f14 + ' 涨' + s0.f3 + '%');
+                debugFn('按换手率排序，第1页首条: ' + s0.f12 + ' ' + s0.f14 + ' 换手' + s0.f8 + '%');
             }
 
+            var pageAdded = 0;
+            var minTurnoverThisPage = 999;
             for (var i = 0; i < data.diff.length; i++) {
                 var s = data.diff[i];
                 var code = s.f12;
                 var name = s.f14;
                 var turnover = parseFloat(s.f8) || 0;
+                if (turnover < minTurnoverThisPage) minTurnoverThisPage = turnover;
                 var nmcRaw = parseFloat(s.f21) || 0; // 流通市值 元
                 var mktcapRaw = parseFloat(s.f20) || 0; // 总市值 元
                 var nmcYi = nmcRaw / 1e8; // 转为亿
@@ -136,10 +139,17 @@
                     open: parseFloat(s.f17) || 0,
                     symbol: (code.startsWith('6') || code.startsWith('9') ? 1 : 0)
                 });
+                pageAdded++;
             }
 
-            if (debugFn && p % 5 === 0) {
-                debugFn('已扫' + p + '页(' + (data.total || '?') + '只全市场)，候选' + stocks.length + '只');
+            if (debugFn && p % 3 === 0) {
+                debugFn('扫' + p + '页 候选' + stocks.length + '只(本页+' + pageAdded + ') 本页最低换手' + minTurnoverThisPage.toFixed(1) + '%');
+            }
+
+            // 按换手率降序排列，当本页最低换手已低于阈值，后面不会再有符合条件的
+            if (minTurnoverThisPage < minTo && pageAdded === 0) {
+                if (debugFn) debugFn('换手率已降至' + minTurnoverThisPage.toFixed(1) + '%<' + minTo + '%，提前停止(共扫' + p + '页)');
+                break;
             }
 
             await delay(250);
