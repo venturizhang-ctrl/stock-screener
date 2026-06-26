@@ -53,107 +53,87 @@
         });
     })();
 
-    // ===== 东方财富：A股列表扫描（纯JSON，按涨跌幅排序）=====
-    // fields: f2=现价 f3=涨跌幅 f5=成交量(手) f8=换手率 f12=代码 f14=名称
-    //         f15=最高 f16=最低 f17=今开 f20=总市值(元) f21=流通市值(元)
-    function fetchEastMoneyPage(pageNum) {
-        var fields = 'f2,f3,f5,f8,f12,f14,f15,f16,f17,f20,f21';
-        var fs = 'm:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23'; // 沪深京A股
-        var url = 'https://push2.eastmoney.com/api/qt/clist/get' +
-            '?cb=&fid=f8&po=1&pz=100&pn=' + pageNum +
-            '&np=1&fltt=2&invt=2&fs=' + encodeURIComponent(fs) +
-            '&fields=' + fields;
-        return fetch(url).then(function(res) {
-            if (!res.ok) throw new Error('EM HTTP ' + res.status);
+    // ===== 新浪：全A股扫描（json_v2.php，纯JSON，按代码排序）=====
+    // 返回字段: code, name, trade(现价), open, high, low,
+    //   changepercent, volume, amount, turnoverratio, nmc, mktcap, symbol
+    function fetchSinaPage(pageNum) {
+        var url = 'https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData';
+        var params = 'page=' + pageNum + '&num=100&sort=symbol&asc=1&node=hs_a&_s_r_a=page';
+        return fetch(url + '?' + params).then(function(res) {
+            if (!res.ok) throw new Error('Sina HTTP ' + res.status);
             return res.json();
-        }).then(function(d) {
-            if (!d.data || !d.data.diff) throw new Error('EM 数据为空');
-            return d.data;
         });
     }
 
     async function getActiveStocks(debugFn, minTo, minCap) {
         var stocks = [];
-        var pageErrors = 0;
-        var totalPages = 30; // 100条/页 × 30页 = 3000只，覆盖活跃股
+        var consecutiveEmpties = 0;
+        var maxPages = 60; // 60页×100只=6000只，覆盖全A股
 
-        for (var p = 1; p <= totalPages; p++) {
+        for (var p = 1; p <= maxPages; p++) {
             var data = null;
-            var lastErr = '';
             for (var retry = 0; retry < 3; retry++) {
                 try {
-                    data = await fetchEastMoneyPage(p);
-                    if (data && data.diff && data.diff.length > 0) break;
-                    lastErr = '空响应';
+                    data = await fetchSinaPage(p);
+                    if (data && data.length > 0) break;
                     if (retry < 2) await delay(800);
                 } catch (e) {
-                    lastErr = e.message;
-                    if (retry < 2) await delay(800);
+                    if (retry < 2) await delay(1000);
                 }
             }
-            if (!data || !data.diff || data.diff.length === 0) {
-                pageErrors++;
-                if (pageErrors >= 3) break;
+
+            if (!data || data.length === 0) {
+                consecutiveEmpties++;
+                if (consecutiveEmpties >= 3) {
+                    if (debugFn) debugFn('连续3页空，停止。共扫' + (p-1) + '页');
+                    break;
+                }
                 continue;
             }
-            pageErrors = 0;
+            consecutiveEmpties = 0;
 
-            // 第一页打印样本
-            if (p === 1 && debugFn) {
-                var s0 = data.diff[0];
-                debugFn('按换手率排序，第1页首条: ' + s0.f12 + ' ' + s0.f14 + ' 换手' + s0.f8 + '%');
-            }
-
-            var pageAdded = 0;
-            var minTurnoverThisPage = 999;
-            for (var i = 0; i < data.diff.length; i++) {
-                var s = data.diff[i];
-                var code = s.f12;
-                var name = s.f14;
-                var turnover = parseFloat(s.f8) || 0;
-                if (turnover < minTurnoverThisPage) minTurnoverThisPage = turnover;
-                var nmcRaw = parseFloat(s.f21) || 0; // 流通市值 元
-                var mktcapRaw = parseFloat(s.f20) || 0; // 总市值 元
-                var nmcYi = nmcRaw / 1e8; // 转为亿
+            for (var i = 0; i < data.length; i++) {
+                var s = data[i];
+                var code = s.code;
+                var name = s.name;
+                var turnover = parseFloat(s.turnoverratio) || 0;
+                var nmcRaw = parseFloat(s.nmc) || 0;     // 元
+                var mktcapRaw = parseFloat(s.mktcap) || 0; // 元
+                var nmcYi = nmcRaw / 1e8;   // 转为亿
                 var mktcapYi = mktcapRaw / 1e8;
 
                 // 过滤
+                if (!code || !name) continue;
                 if (turnover < minTo) continue;
                 if (nmcYi < minCap) continue;
-                // 跳过ST、新股(N/C开头)、科创板(688)、北交所(8/4开头)
-                if (!name) continue;
-                if (name.indexOf('ST') >= 0 || name.indexOf('*ST') >= 0 || name.indexOf('N') === 0 || name.indexOf('C') === 0) continue;
-                if (code.startsWith('8') || code.startsWith('4') || code.startsWith('688')) continue;
+                // 跳过ST、新股、科创板、北交所
+                if (name.indexOf('ST') >= 0 || name.indexOf('*ST') >= 0) continue;
+                if (name.indexOf('N') === 0 || name.indexOf('C') === 0) continue;
+                if (code.startsWith('688') || code.startsWith('8') || code.startsWith('4')) continue;
 
                 stocks.push({
                     code: code,
                     name: name,
-                    price: parseFloat(s.f2) || 0,
-                    change: parseFloat(s.f3) || 0,
-                    volume: (parseFloat(s.f5) || 0) * 100, // 手→股，与其他函数统一
+                    price: parseFloat(s.trade) || 0,
+                    change: parseFloat(s.changepercent) || 0,
+                    volume: parseFloat(s.volume) || 0,   // 股
                     turnover: turnover,
-                    nmc: nmcYi,    // 亿
+                    nmc: nmcYi,
                     mktcap: mktcapYi,
-                    high: parseFloat(s.f15) || 0,
-                    low: parseFloat(s.f16) || 0,
-                    open: parseFloat(s.f17) || 0,
-                    symbol: (code.startsWith('6') || code.startsWith('9') ? 1 : 0)
+                    high: parseFloat(s.high) || 0,
+                    low: parseFloat(s.low) || 0,
+                    open: parseFloat(s.open) || 0,
+                    symbol: (s.symbol || '').startsWith('sh') ? 1 : 0
                 });
-                pageAdded++;
             }
 
-            if (debugFn && p % 3 === 0) {
-                debugFn('扫' + p + '页 候选' + stocks.length + '只(本页+' + pageAdded + ') 本页最低换手' + minTurnoverThisPage.toFixed(1) + '%');
+            if (debugFn && p % 5 === 0) {
+                debugFn('扫' + p + '页 候选' + stocks.length + '只');
             }
 
-            // 按换手率降序排列，当本页最低换手已低于阈值，后面不会再有符合条件的
-            if (minTurnoverThisPage < minTo && pageAdded === 0) {
-                if (debugFn) debugFn('换手率已降至' + minTurnoverThisPage.toFixed(1) + '%<' + minTo + '%，提前停止(共扫' + p + '页)');
-                break;
-            }
-
-            await delay(250);
+            await delay(200);
         }
+
         return stocks;
     }
 
