@@ -631,8 +631,6 @@
         allResults = stocks;
         var area = document.getElementById('resultArea');
         if (area) area.style.display = 'block';
-        var searchBar = document.getElementById('searchBar');
-        if (searchBar) searchBar.style.display = stocks.length > 0 ? 'block' : 'none';
         var count = document.getElementById('countResult');
         if (count) count.textContent = stocks.length;
         renderStockList(stocks);

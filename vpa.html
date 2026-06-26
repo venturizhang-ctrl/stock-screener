@@ -95,12 +95,12 @@
     <!-- 结果 -->
     <section id="resultArea" class="result-section" style="display:none;">
         <h2 class="result-title"><span class="result-icon">📊</span>量价分析信号<span class="result-badge result-badge-best" id="resultBadge">VPA</span></h2>
-        <p class="result-summary">共 <strong id="countResult">0</strong> 只有效信号</p>
-        <div class="search-bar" id="searchBar" style="display:none; padding: 10px 14px; background: #1A1D23;">
-            <input type="text" id="searchInput" placeholder="🔍 输入代码或名称搜索..." autocomplete="off"
-                style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid #444;background:#252830;color:#EEE;font-size:16px;box-sizing:border-box;">
-            <p id="searchResult" style="color:#888;font-size:13px;margin:6px 0 0;display:none;"></p>
+        <div style="display:flex;align-items:center;gap:10px;background:#1A1D23;padding:8px 14px;border-bottom:1px solid #222;">
+            <p class="result-summary" style="flex-shrink:0;padding:0;border:none;background:none;margin:0;">共 <strong id="countResult">0</strong> 只</p>
+            <input type="text" id="searchInput" placeholder="🔍 搜代码/名称" autocomplete="off"
+                style="flex:1;min-width:0;padding:8px 12px;border-radius:8px;border:1px solid #444;background:#252830;color:#EEE;font-size:14px;">
         </div>
+        <p id="searchResult" style="color:#FF9800;font-size:13px;margin:0;padding:6px 14px;background:#1A1D23;display:none;"></p>
         <div id="listResult" class="stock-list"></div>
     </section>
 
