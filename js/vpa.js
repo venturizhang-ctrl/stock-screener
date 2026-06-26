@@ -625,13 +625,49 @@
         if (count) count.textContent = '0';
     }
 
+    var allResults = []; // 全局存储，用于搜索
+
     function showResults(stocks) {
+        allResults = stocks;
         var area = document.getElementById('resultArea');
         if (area) area.style.display = 'block';
+        var searchBar = document.getElementById('searchBar');
+        if (searchBar) searchBar.style.display = stocks.length > 0 ? 'block' : 'none';
         var count = document.getElementById('countResult');
         if (count) count.textContent = stocks.length;
         renderStockList(stocks);
+        // 清空搜索框
+        var input = document.getElementById('searchInput');
+        if (input) input.value = '';
+        var msg = document.getElementById('searchResult');
+        if (msg) msg.style.display = 'none';
     }
+
+    // ===== 搜索过滤 =====
+    (function() {
+        var input = document.getElementById('searchInput');
+        if (!input) return;
+        input.addEventListener('input', function() {
+            var keyword = this.value.trim().toLowerCase();
+            var msg = document.getElementById('searchResult');
+            if (!keyword) {
+                if (msg) msg.style.display = 'none';
+                renderStockList(allResults);
+                return;
+            }
+            // 按代码或名称匹配
+            var filtered = allResults.filter(function(s) {
+                return s.code.indexOf(keyword) >= 0 || s.name.toLowerCase().indexOf(keyword) >= 0;
+            });
+            if (filtered.length === 0) {
+                if (msg) { msg.textContent = '❌ 没有找到 "' + keyword + '"'; msg.style.display = 'block'; }
+                renderStockList([]);
+            } else {
+                if (msg) { msg.textContent = '✅ 找到 ' + filtered.length + ' 只匹配'; msg.style.display = 'block'; }
+                renderStockList(filtered);
+            }
+        });
+    })();
 
     function renderStockList(stocks) {
         var list = document.getElementById('listResult');
