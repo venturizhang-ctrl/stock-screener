@@ -97,10 +97,10 @@
                 var code = s.code;
                 var name = s.name;
                 var turnover = parseFloat(s.turnoverratio) || 0;
-                var nmcRaw = parseFloat(s.nmc) || 0;     // 元
-                var mktcapRaw = parseFloat(s.mktcap) || 0; // 元
-                var nmcYi = nmcRaw / 1e8;   // 转为亿
-                var mktcapYi = mktcapRaw / 1e8;
+                var nmcRaw = parseFloat(s.nmc) || 0;     // 万元
+                var mktcapRaw = parseFloat(s.mktcap) || 0; // 万元
+                var nmcYi = nmcRaw / 10000;   // 万元→亿
+                var mktcapYi = mktcapRaw / 10000;
 
                 // 过滤
                 if (!code || !name) continue;
