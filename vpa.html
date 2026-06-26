@@ -6,37 +6,40 @@
     <meta name="theme-color" content="#1A1D23">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="高窄旗形">
-    <meta name="application-name" content="高窄旗形">
-    <title>高窄旗形突破 - A股</title>
-    <link rel="stylesheet" href="css/style.css?v=4">
+    <title>量价分析 VPA - A股</title>
+    <link rel="stylesheet" href="css/style.css?v=8">
     <link rel="icon" type="image/svg+xml" href="img/icon.svg">
 </head>
 <body>
     <header class="header">
-        <h1 class="header-title">🎯 高窄旗形突破</h1>
-        <p class="header-subtitle">拉升→紧窄整理→放量突破 · Christian Kullamägi 策略</p>
+        <h1 class="header-title">📊 量价分析 VPA</h1>
+        <p class="header-subtitle">Wyckoff量价理论 · 周K线级别 · 努力vs结果</p>
     </header>
 
     <!-- 模式切换 -->
     <section class="mode-switch">
-        <a href="index.html" class="mode-tab">🔄 MACD</a>
+        <a href="index.html" class="mode-tab">🔄 突破</a>
         <a href="weekly.html" class="mode-tab">📊 周线</a>
-        <a href="flag.html" class="mode-tab active">🎯 旗形</a>
+        <a href="flag.html" class="mode-tab">🎯 旗形</a>
         <a href="minervini.html" class="mode-tab">📐 SEPA</a>
         <a href="flight.html" class="mode-tab">⚡ Flight</a>
         <a href="williams.html" class="mode-tab">📦 WR</a>
-        <a href="vpa.html" class="mode-tab">📊 VPA</a>
+        <a href="vpa.html" class="mode-tab active">📊 VPA</a>
     </section>
 
-    <!-- 策略说明 -->
+    <!-- 策略简介 -->
     <section class="params-bar">
-        <div class="params-header">📖 策略简介</div>
+        <div class="params-header">📖 核心理念</div>
         <div class="params-body">
             <div class="param-row" style="color:#aaa;font-size:14px;line-height:1.6;">
-                瑞典交易员 Christian Kullamägi 核心策略（A股适配版）<br>
-                <b>三步识别</b>：①过去90天内拉升30%+ → ②进入10-40天紧窄缩量整理（振幅≤20%，始终在EMA20上方）→ ③今日放量突破旗形上沿<br>
-                <b>特点</b>：信号稀有但盈亏比极高，通常几天甚至几周才出现一只
+                <b>量是"努力"，价是"结果"。</b>如果成交量（努力）很大但价格（结果）没怎么动，说明有隐藏的力量在反向操作。<br>
+                <b>经典模式：</b><br>
+                🟢 <b>吸筹区</b>：高换手+窄幅横盘+低位 → 主力悄悄吃货<br>
+                🟢 <b>震仓反弹</b>：恐慌大跌后强力反弹 → 洗盘结束<br>
+                🟢 <b>缩量上涨</b>：量缩价涨 → 供应消化，轻松上行<br>
+                🔴 <b>高位滞涨</b>：高换手+涨不动+高位 → 主力出货<br>
+                🔴 <b>放量下跌</b>：量大价跌 → 恐慌未结束<br>
+                ⚠️ <b>游资接力</b>：5周换手>250%+暴涨 → 风险积累
             </div>
         </div>
     </section>
@@ -46,25 +49,21 @@
         <div class="params-header">📐 筛选参数</div>
         <div class="params-body" id="paramsBody">
             <div class="param-row">
-                <span>拉升幅度：</span>
-                <label class="radio-row"><input type="radio" name="rallyGain" id="optGain30" checked> 30%+</label>
-                <label class="radio-row"><input type="radio" name="rallyGain" id="optGain40"> 40%+</label>
-                <label class="radio-row"><input type="radio" name="rallyGain" id="optGain50"> 50%+</label>
+                <span>日换手率下限：</span>
+                <label class="radio-row"><input type="radio" name="turnover" id="optTo3" checked> 3%</label>
+                <label class="radio-row"><input type="radio" name="turnover" id="optTo5"> 5%</label>
+                <label class="radio-row"><input type="radio" name="turnover" id="optTo8"> 8%</label>
+                <label class="radio-row"><input type="radio" name="turnover" id="optTo10"> 10%</label>
             </div>
             <div class="param-row">
-                <span>旗形振幅：</span>
-                <label class="radio-row"><input type="radio" name="flagAmp" id="optAmp15"> ≤15%</label>
-                <label class="radio-row"><input type="radio" name="flagAmp" id="optAmp20" checked> ≤20%</label>
-                <label class="radio-row"><input type="radio" name="flagAmp" id="optAmp25"> ≤25%</label>
+                <span>最低市值：</span>
+                <label class="radio-row"><input type="radio" name="cap" id="optCap20" checked> 20亿</label>
+                <label class="radio-row"><input type="radio" name="cap" id="optCap50"> 50亿</label>
+                <label class="radio-row"><input type="radio" name="cap" id="optCap100"> 100亿</label>
             </div>
-            <div class="param-row">
-                <span>涨幅下限：</span>
-                <label class="radio-row"><input type="radio" name="changeMin" id="optChg1"> 1%</label>
-                <label class="radio-row"><input type="radio" name="changeMin" id="optChg2" checked> 2%</label>
-                <label class="radio-row"><input type="radio" name="changeMin" id="optChg3"> 3%</label>
-                <label class="radio-row"><input type="radio" name="changeMin" id="optChg5"> 5%</label>
+            <div class="param-row" style="color:#777;font-size:14px;">
+                基于周K线分析（30根），识别量价背离模式。换手越低扫描越全但越慢。
             </div>
-            <div class="param-row" style="color:#777;font-size:14px;">旗形整理10-40天 | 缩量至拉升期70%以下 | EMA20上方 | 今日放量突破旗顶</div>
         </div>
     </section>
 
@@ -72,7 +71,7 @@
     <section class="action-bar">
         <button id="btnRefresh" class="btn-refresh">
             <svg class="btn-icon-svg" viewBox="0 0 24 24" width="18" height="18"><path d="M17.65 6.35A7.96 7.96 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>
-            <span class="btn-text">扫描高窄旗形</span>
+            <span class="btn-text">扫描量价信号</span>
         </button>
         <div class="refresh-info">
             <span id="lastRefresh" class="last-refresh">尚未扫描</span>
@@ -80,16 +79,16 @@
         </div>
     </section>
 
-    <!-- 加载 -->
-    <section id="loadingArea" class="loading-area" style="display:none;">
+    <!-- 加载遮罩 -->
+    <section id="loadingOverlay" class="loading-area" style="display:none;">
         <div class="spinner"></div>
-        <p id="loadingText" class="loading-text">正在海选...</p>
+        <p id="loadingTitle" class="loading-text">正在扫描...</p>
         <p id="loadingSub" class="loading-sub"></p>
     </section>
 
     <!-- 错误 -->
     <section id="errorArea" class="error-area" style="display:none;">
-        <p id="errorText" class="error-text"></p>
+        <p id="errorMsg" class="error-text"></p>
     </section>
 
     <!-- 调试 -->
@@ -100,16 +99,16 @@
 
     <!-- 结果 -->
     <section id="resultArea" class="result-section" style="display:none;">
-        <h2 class="result-title"><span class="result-icon">🎯</span>高窄旗形突破<span class="result-badge result-badge-best" id="resultBadge">信号确认</span></h2>
-        <p class="result-summary">共 <strong id="countResult">0</strong> 只</p>
+        <h2 class="result-title"><span class="result-icon">📊</span>量价分析信号<span class="result-badge result-badge-best" id="resultBadge">VPA</span></h2>
+        <p class="result-summary">共 <strong id="countResult">0</strong> 只有效信号</p>
         <div id="listResult" class="stock-list"></div>
     </section>
 
     <!-- 空状态 -->
     <section id="emptyState" class="empty-state">
-        <div class="empty-icon">🎯</div>
-        <p class="empty-text">点击"扫描高窄旗形"寻找旗形突破信号</p>
-        <p class="empty-hint">拉升30%+ → 紧窄整理 → 放量突破 · 稀有但高盈亏比</p>
+        <div class="empty-icon">📊</div>
+        <p class="empty-text">点击"扫描量价信号"开始分析</p>
+        <p class="empty-hint">基于周K线量价关系 · 识别吸筹/出货/突破/反转模式</p>
     </section>
 
     <!-- 弹窗 -->
@@ -121,7 +120,7 @@
     </section>
 
     <footer class="footer">
-        <p>Christian Kullamägi："参与最大的趋势，进行大量投注，并保持损失较小。"</p>
+        <p>VPA — "Effort without result is a warning. Result without effort is a signal."</p>
     </footer>
 
     <script>
@@ -150,8 +149,8 @@
         }
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
     </script>
-    <script src="js/api.js?v=4"></script>
-    <script src="js/ui.js?v=4"></script>
-    <script src="js/flag.js?v=4"></script>
+    <script src="js/api.js?v=8"></script>
+    <script src="js/ui.js?v=8"></script>
+    <script src="js/vpa.js?v=8"></script>
 </body>
 </html>
