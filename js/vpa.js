@@ -17,8 +17,8 @@
     updateMarketStatus();
 
     // ===== 可调参数 =====
-    var minTurnover = 3;        // 日换手率下限（%）
-    var minMarketCap = 20;      // 最低市值（亿）
+    var minTurnover = 5;        // 日换手率下限（%）
+    var minMarketCap = 40;      // 最低市值（亿）
     var changeMin = 0;          // 最低涨幅（0=不限制，抓到下跌的也有价值）
 
     var debugLines = [];
@@ -32,10 +32,10 @@
     // ===== 参数调整 =====
     (function() {
         var toOptions = [
-            { id: 'optTo3', val: 3 },
             { id: 'optTo5', val: 5 },
             { id: 'optTo8', val: 8 },
-            { id: 'optTo10', val: 10 }
+            { id: 'optTo10', val: 10 },
+            { id: 'optTo15', val: 15 }
         ];
         toOptions.forEach(function(opt) {
             var e = document.getElementById(opt.id);
@@ -43,9 +43,9 @@
         });
 
         var capOptions = [
-            { id: 'optCap20', val: 20 },
-            { id: 'optCap50', val: 50 },
-            { id: 'optCap100', val: 100 }
+            { id: 'optCap40', val: 40 },
+            { id: 'optCap100', val: 100 },
+            { id: 'optCap500', val: 500 }
         ];
         capOptions.forEach(function(opt) {
             var e = document.getElementById(opt.id);
