@@ -105,7 +105,7 @@
                 // 过滤
                 if (!code || !name) continue;
                 if (turnover < minTo) continue;
-                if (nmcYi < minCap) continue;
+                if (mktcapYi < minCap) continue;  // 用总市值，和软件显示一致
                 // 跳过ST、新股、科创板、北交所
                 if (name.indexOf('ST') >= 0 || name.indexOf('*ST') >= 0) continue;
                 if (name.indexOf('N') === 0 || name.indexOf('C') === 0) continue;
