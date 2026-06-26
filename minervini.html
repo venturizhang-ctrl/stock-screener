@@ -6,25 +6,22 @@
     <meta name="theme-color" content="#1A1D23">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="MACD选股">
-    <meta name="application-name" content="MACD选股">
-    <title>MACD底背离 - A股</title>
-    <link rel="stylesheet" href="css/style.css?v=6">
-    <link rel="manifest" href="manifest.json">
+    <title>SEPA选股 - A股</title>
+    <link rel="stylesheet" href="css/style.css?v=5">
     <link rel="icon" type="image/svg+xml" href="img/icon.svg">
 </head>
 <body>
     <header class="header">
-        <h1 class="header-title">🔄 MACD 底背离</h1>
-        <p class="header-subtitle">半木夏策略 · 价格新低 MACD不新低 → 趋势反转</p>
+        <h1 class="header-title">📐 SEPA 趋势选股</h1>
+        <p class="header-subtitle">Mark Minervini · 趋势模板 + VCP收缩 + 放量突破</p>
     </header>
 
     <!-- 模式切换 -->
     <section class="mode-switch">
-        <a href="index.html" class="mode-tab active">🔄 MACD</a>
+        <a href="index.html" class="mode-tab">🔄 MACD</a>
         <a href="weekly.html" class="mode-tab">📊 周线</a>
         <a href="flag.html" class="mode-tab">🎯 旗形</a>
-        <a href="minervini.html" class="mode-tab">📐 SEPA</a>
+        <a href="minervini.html" class="mode-tab active">📐 SEPA</a>
         <a href="flight.html" class="mode-tab">⚡ Flight</a>
         <a href="williams.html" class="mode-tab">📦 WR</a>
     </section>
@@ -34,10 +31,11 @@
         <div class="params-header">📖 策略简介</div>
         <div class="params-body">
             <div class="param-row" style="color:#aaa;font-size:14px;line-height:1.6;">
-                半木夏 MACD底背离策略（A股日线适配版）<br>
-                <b>核心逻辑</b>：股价在下跌末端做出更低低点，但MACD柱状图不再跟随创新低 → 下跌动能衰竭 → 反弹启动<br>
-                <b>三步筛选</b>：①计算MACD（12,26,9）找底背离 → ②RSI辅助确认 → ③阳线放量入场<br>
-                <b>特点</b>：唯一<b>抄底</b>策略，与其他三个顺势策略互补；需T+1持有，不适合日内
+                Mark Minervini 两届全美交易冠军 · SEPA策略（A股适配版）<br>
+                <b>三步筛选</b>：<br>
+                ① <b>趋势模板</b>：8项条件确认为第二阶段上升趋势（50/150/200均线多头排列 + 年线向上 + 接近年高 + 远离年低 + 相对强度）<br>
+                ② <b>VCP收缩</b>：波动收缩形态——多轮低点逐步抬高，每轮振幅和成交量递减<br>
+                ③ <b>入场信号</b>：今日放量突破VCP高点 + 收盘强势
             </div>
         </div>
     </section>
@@ -47,9 +45,14 @@
         <div class="params-header">📐 筛选参数</div>
         <div class="params-body" id="paramsBody">
             <div class="param-row">
-                <span>背离段数：</span>
-                <label class="radio-row"><input type="radio" name="divSegments" id="optDiv2" checked> 2段+</label>
-                <label class="radio-row"><input type="radio" name="divSegments" id="optDiv3"> 3段+</label>
+                <span>趋势模板：</span>
+                <label class="radio-row"><input type="radio" name="tplMin" id="optTpl7" checked> 7/8项</label>
+                <label class="radio-row"><input type="radio" name="tplMin" id="optTpl8"> 全部8项</label>
+            </div>
+            <div class="param-row">
+                <span>VCP底部：</span>
+                <label class="radio-row"><input type="radio" name="vcpMin" id="optVcp2" checked> ≥2底</label>
+                <label class="radio-row"><input type="radio" name="vcpMin" id="optVcp3"> ≥3底</label>
             </div>
             <div class="param-row">
                 <span>涨幅下限：</span>
@@ -59,7 +62,7 @@
                 <label class="radio-row"><input type="radio" name="changeMin" id="optChg5"> 5%</label>
             </div>
             <div class="param-row" style="color:#777;font-size:14px;">
-                严格过滤：60日回撤≥8% | RSI低点&lt;45 | 价跌≥3% | MACD柱升≥10% | 距低≤20天 | 阳线实体≥1%
+                趋势模板8项：价>150&200MA | 150MA>200MA | 200MA上升 | 50MA>150&200MA | 价>50MA | 距年低+25%+ | 距年高≤25% | 60日涨≥10%
             </div>
         </div>
     </section>
@@ -68,7 +71,7 @@
     <section class="action-bar">
         <button id="btnRefresh" class="btn-refresh">
             <svg class="btn-icon-svg" viewBox="0 0 24 24" width="18" height="18"><path d="M17.65 6.35A7.96 7.96 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>
-            <span class="btn-text">扫描底背离</span>
+            <span class="btn-text">扫描SEPA信号</span>
         </button>
         <div class="refresh-info">
             <span id="lastRefresh" class="last-refresh">尚未扫描</span>
@@ -79,7 +82,7 @@
     <!-- 加载 -->
     <section id="loadingArea" class="loading-area" style="display:none;">
         <div class="spinner"></div>
-        <p id="loadingText" class="loading-text">正在计算MACD...</p>
+        <p id="loadingText" class="loading-text">正在海选...</p>
         <p id="loadingSub" class="loading-sub"></p>
     </section>
 
@@ -96,16 +99,16 @@
 
     <!-- 结果 -->
     <section id="resultArea" class="result-section" style="display:none;">
-        <h2 class="result-title"><span class="result-icon">🔄</span>MACD底背离<span class="result-badge result-badge-best" id="resultBadge">反转信号</span></h2>
+        <h2 class="result-title"><span class="result-icon">📐</span>SEPA入场信号<span class="result-badge result-badge-best" id="resultBadge">信号确认</span></h2>
         <p class="result-summary">共 <strong id="countResult">0</strong> 只</p>
         <div id="listResult" class="stock-list"></div>
     </section>
 
     <!-- 空状态 -->
     <section id="emptyState" class="empty-state">
-        <div class="empty-icon">🔄</div>
-        <p class="empty-text">点击"扫描底背离"寻找MACD反转信号</p>
-        <p class="empty-hint">MACD底背离 → RSI确认 → 阳线入场 · 唯一抄底策略</p>
+        <div class="empty-icon">📐</div>
+        <p class="empty-text">点击"扫描SEPA信号"寻找Minervini入场机会</p>
+        <p class="empty-hint">趋势模板 → VCP收缩 → 放量突破 · 三层过滤精选</p>
     </section>
 
     <!-- 弹窗 -->
@@ -117,7 +120,7 @@
     </section>
 
     <footer class="footer">
-        <p>半木夏："技术只占10%，仓位管理占70%，耐心占20%。"</p>
+        <p>Mark Minervini："交易是涉及真金白银的严肃业务，每笔都需周密计划。"</p>
     </footer>
 
     <script>
@@ -146,8 +149,8 @@
         }
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
     </script>
-    <script src="js/api.js?v=6"></script>
-    <script src="js/ui.js?v=6"></script>
-    <script src="js/macd.js?v=6"></script>
+    <script src="js/api.js?v=5"></script>
+    <script src="js/ui.js?v=5"></script>
+    <script src="js/minervini.js?v=5"></script>
 </body>
 </html>

@@ -6,26 +6,23 @@
     <meta name="theme-color" content="#1A1D23">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="MACD选股">
-    <meta name="application-name" content="MACD选股">
-    <title>MACD底背离 - A股</title>
-    <link rel="stylesheet" href="css/style.css?v=6">
-    <link rel="manifest" href="manifest.json">
+    <title>Flight恐慌反转 - A股</title>
+    <link rel="stylesheet" href="css/style.css?v=7">
     <link rel="icon" type="image/svg+xml" href="img/icon.svg">
 </head>
 <body>
     <header class="header">
-        <h1 class="header-title">🔄 MACD 底背离</h1>
-        <p class="header-subtitle">半木夏策略 · 价格新低 MACD不新低 → 趋势反转</p>
+        <h1 class="header-title">⚡ Flight 恐慌反转</h1>
+        <p class="header-subtitle">韩国交易员Flight · 恐慌砸盘+支撑反弹</p>
     </header>
 
     <!-- 模式切换 -->
     <section class="mode-switch">
-        <a href="index.html" class="mode-tab active">🔄 MACD</a>
+        <a href="index.html" class="mode-tab">🔄 MACD</a>
         <a href="weekly.html" class="mode-tab">📊 周线</a>
         <a href="flag.html" class="mode-tab">🎯 旗形</a>
         <a href="minervini.html" class="mode-tab">📐 SEPA</a>
-        <a href="flight.html" class="mode-tab">⚡ Flight</a>
+        <a href="flight.html" class="mode-tab active">⚡ Flight</a>
         <a href="williams.html" class="mode-tab">📦 WR</a>
     </section>
 
@@ -34,10 +31,10 @@
         <div class="params-header">📖 策略简介</div>
         <div class="params-body">
             <div class="param-row" style="color:#aaa;font-size:14px;line-height:1.6;">
-                半木夏 MACD底背离策略（A股日线适配版）<br>
-                <b>核心逻辑</b>：股价在下跌末端做出更低低点，但MACD柱状图不再跟随创新低 → 下跌动能衰竭 → 反弹启动<br>
-                <b>三步筛选</b>：①计算MACD（12,26,9）找底背离 → ②RSI辅助确认 → ③阳线放量入场<br>
-                <b>特点</b>：唯一<b>抄底</b>策略，与其他三个顺势策略互补；需T+1持有，不适合日内
+                韩国传奇交易员 Flight · 恐慌反转策略（A股适配版）<br>
+                <b>核心逻辑</b>：关键支撑位出现放量恐慌阴线 → 散户割肉 → 次日阳线确认 → 入场抓反弹<br>
+                <b>三步筛选</b>：①识别20/60日支撑位 → ②近5天恐慌日（阴线+放量+触支撑）→ ③今日阳线反弹确认<br>
+                <b>特点</b>：专抓<b>极端恐慌</b>后的快速反弹，目标10%止盈，最短持仓周期
             </div>
         </div>
     </section>
@@ -47,11 +44,6 @@
         <div class="params-header">📐 筛选参数</div>
         <div class="params-body" id="paramsBody">
             <div class="param-row">
-                <span>背离段数：</span>
-                <label class="radio-row"><input type="radio" name="divSegments" id="optDiv2" checked> 2段+</label>
-                <label class="radio-row"><input type="radio" name="divSegments" id="optDiv3"> 3段+</label>
-            </div>
-            <div class="param-row">
                 <span>涨幅下限：</span>
                 <label class="radio-row"><input type="radio" name="changeMin" id="optChg1" checked> 1%</label>
                 <label class="radio-row"><input type="radio" name="changeMin" id="optChg2"> 2%</label>
@@ -59,7 +51,7 @@
                 <label class="radio-row"><input type="radio" name="changeMin" id="optChg5"> 5%</label>
             </div>
             <div class="param-row" style="color:#777;font-size:14px;">
-                严格过滤：60日回撤≥8% | RSI低点&lt;45 | 价跌≥3% | MACD柱升≥10% | 距低≤20天 | 阳线实体≥1%
+                恐慌日：近5天阴线跌≥3% + 放量≥1.5倍 + 触支撑≤5% | 入场：阳线+支撑反弹+放量+收盘强势
             </div>
         </div>
     </section>
@@ -68,7 +60,7 @@
     <section class="action-bar">
         <button id="btnRefresh" class="btn-refresh">
             <svg class="btn-icon-svg" viewBox="0 0 24 24" width="18" height="18"><path d="M17.65 6.35A7.96 7.96 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>
-            <span class="btn-text">扫描底背离</span>
+            <span class="btn-text">扫描恐慌反转</span>
         </button>
         <div class="refresh-info">
             <span id="lastRefresh" class="last-refresh">尚未扫描</span>
@@ -79,7 +71,7 @@
     <!-- 加载 -->
     <section id="loadingArea" class="loading-area" style="display:none;">
         <div class="spinner"></div>
-        <p id="loadingText" class="loading-text">正在计算MACD...</p>
+        <p id="loadingText" class="loading-text">正在检测恐慌反转...</p>
         <p id="loadingSub" class="loading-sub"></p>
     </section>
 
@@ -96,16 +88,16 @@
 
     <!-- 结果 -->
     <section id="resultArea" class="result-section" style="display:none;">
-        <h2 class="result-title"><span class="result-icon">🔄</span>MACD底背离<span class="result-badge result-badge-best" id="resultBadge">反转信号</span></h2>
+        <h2 class="result-title"><span class="result-icon">⚡</span>恐慌反转信号<span class="result-badge result-badge-best" id="resultBadge">反转确认</span></h2>
         <p class="result-summary">共 <strong id="countResult">0</strong> 只</p>
         <div id="listResult" class="stock-list"></div>
     </section>
 
     <!-- 空状态 -->
     <section id="emptyState" class="empty-state">
-        <div class="empty-icon">🔄</div>
-        <p class="empty-text">点击"扫描底背离"寻找MACD反转信号</p>
-        <p class="empty-hint">MACD底背离 → RSI确认 → 阳线入场 · 唯一抄底策略</p>
+        <div class="empty-icon">⚡</div>
+        <p class="empty-text">点击"扫描恐慌反转"寻找Flight信号</p>
+        <p class="empty-hint">恐慌砸盘→支撑反弹→阳线确认 · 极端情绪反转</p>
     </section>
 
     <!-- 弹窗 -->
@@ -117,7 +109,7 @@
     </section>
 
     <footer class="footer">
-        <p>半木夏："技术只占10%，仓位管理占70%，耐心占20%。"</p>
+        <p>Flight："交易的核心不是预判涨跌，而是跟随行情，严控风险。"</p>
     </footer>
 
     <script>
@@ -146,8 +138,8 @@
         }
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
     </script>
-    <script src="js/api.js?v=6"></script>
-    <script src="js/ui.js?v=6"></script>
-    <script src="js/macd.js?v=6"></script>
+    <script src="js/api.js?v=7"></script>
+    <script src="js/ui.js?v=7"></script>
+    <script src="js/flight.js?v=7"></script>
 </body>
 </html>

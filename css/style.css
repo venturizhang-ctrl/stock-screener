@@ -253,3 +253,71 @@ body {
 .action-bar { padding: 16px 14px; }
 .result-title { padding: 18px 14px; font-size: 18px; }
 .refresh-info { text-align: right; }
+
+/* ===== 高窄旗形卡片 ===== */
+.flag-path {
+    display: flex; align-items: center; gap: 6px;
+    padding: 12px 0 8px; flex-wrap: wrap;
+}
+.flag-step {
+    padding: 5px 10px; border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    background: #252830; color: #CCC;
+}
+.flag-step.fire {
+    background: #FF6B35; color: #fff;
+}
+.flag-arrow {
+    color: #555; font-size: 14px;
+}
+.flag-detail-row {
+    display: flex; gap: 8px; padding: 3px 0;
+    font-size: 12px; color: #999;
+}
+.flag-label {
+    min-width: 42px; color: #666; font-weight: 600;
+}
+.flag-val {
+    color: #BBB;
+}
+
+/* ===== SEPA趋势模板卡片 ===== */
+.sepa-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0 4px;
+}
+.sepa-label {
+    font-size: 13px; font-weight: 700; color: #888;
+    min-width: 80px;
+}
+.sepa-checks {
+    display: flex; gap: 4px; flex-wrap: wrap;
+}
+.sepa-check {
+    width: 16px; height: 16px; border-radius: 3px;
+    display: inline-block;
+}
+.sepa-check.pass {
+    background: #27AE60;
+    box-shadow: 0 0 4px rgba(39,174,96,0.4);
+}
+.sepa-check.fail {
+    background: #444A55;
+}
+
+/* ===== MACD背离卡片 ===== */
+.macd-div-dot {
+    display: inline-block; padding: 2px 7px; margin: 2px 3px;
+    background: #2A1A2E; border-radius: 4px;
+    font-size: 11px; color: #E91E63;
+    border: 1px solid #3A1A3E;
+}
+
+/* ===== 6标签模式适配 ===== */
+.mode-tab {
+    padding: 8px 0;
+    font-size: 12px;
+    border-radius: 6px;
+    border-width: 1px;
+}
+.mode-switch { gap: 3px; }
