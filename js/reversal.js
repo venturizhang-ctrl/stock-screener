@@ -7,7 +7,7 @@
  * - 扫描最近5个交易日内的吞没形态
  *
  * 2:40 快筛模式：
- * - 仅看涨吞没 + 仅今日触发 + 四因子质量评分
+ * - 仅看涨吞没 + 仅今日触发 + 七因子质量评分
  * - 目标卖价 ≈ 现价 × (1 + 下破×2)
  *
  * 流程：
@@ -122,14 +122,17 @@
         setTimeout(updateTimeWindow, 30000);
     })();
 
-    // ===== 四因子质量评分 =====
+    // ===== 七因子质量评分 =====
 
     /**
-     * 对看涨吞没信号做四因子质量评分
+     * 对看涨吞没信号做七因子质量评分
      *  1. 覆盖倍数 1.5~3x
      *  2. 放量倍数 1.3~2.5x
      *  3. 上穿率 > 0.5%
      *  4. 下破率 1~3%
+     *  5. 收盘位置 ≥ 最高×0.85 (上影线短，买盘推到收盘)
+     *  6. 低开高走 今开 < 昨收 (恐慌被击穿)
+     *  7. 穿前低拉回 今低 < 昨低 且 今收 > 昨低 (洗盘后拉回)
      *  @returns {{ level: string, score: number, details: Array, targetPct: number, stopPct: number }}
      */
     function scoreQuality(sig) {
@@ -157,11 +160,32 @@
         if (dnOk) score++;
         details.push({ name: '下破', value: sig.lowerPierce.toFixed(1) + '%', ok: dnOk, hint: '1~3%' });
 
-        var level = score >= 4 ? 'excellent' : (score >= 3 ? 'good' : 'warning');
+        // 因子5：收盘位置 ≥ 最高×0.85（上影线短）
+        var closePosOk = false;
+        var closePos = 0;
+        if (sig.bar2High > 0) {
+            closePos = (sig.bar2Close - sig.bar2Low) / (sig.bar2High - sig.bar2Low) * 100;
+            closePosOk = (sig.bar2Close >= sig.bar2High * 0.85);
+        }
+        if (closePosOk) score++;
+        details.push({ name: '收盘位置', value: closePos.toFixed(0) + '%', ok: closePosOk, hint: '收在高端' });
 
-        // 目标卖价（仅看涨吞没有意义）
+        // 因子6：低开高走（今开 < 昨收）
+        var lowOpenOk = (sig.bar2Open < sig.bar1Close);
+        if (lowOpenOk) score++;
+        var openVsPrev = sig.bar1Close > 0 ? ((sig.bar2Open - sig.bar1Close) / sig.bar1Close * 100).toFixed(1) + '%' : '--';
+        details.push({ name: '低开高走', value: openVsPrev, ok: lowOpenOk, hint: '今开<昨收' });
+
+        // 因子7：穿前低拉回（今低 < 昨低 且 今收 > 昨低）
+        var pierceRecoverOk = (sig.bar2Low < sig.bar1Low) && (sig.bar2Close > sig.bar1Low);
+        if (pierceRecoverOk) score++;
+        details.push({ name: '穿前低拉回', value: pierceRecoverOk ? '✓' : '✗', ok: pierceRecoverOk, hint: '洗盘后拉回' });
+
+        var level = score >= 7 ? 'excellent' : (score >= 5 ? 'good' : 'warning');
+
+        // 目标卖价
         var targetPct = sig.lowerPierce * 2;
-        var stopPct = sig.bar1Pct;  // 止损 = 前日阴线低点再往下一点
+        var stopPct = sig.bar1Pct;
 
         return { score: score, level: level, details: details, targetPct: targetPct, stopPct: stopPct };
     }
@@ -508,7 +532,7 @@
             '% | 放量≥' + minVolExpand.toFixed(1) +
             'x | 市值≥' + minMarketCap + '亿 | 方向: ' + dirLabel);
         if (quickMode) {
-            debugLog('快筛规则: 仅看涨吞没 + 仅今日 + 四因子评分');
+            debugLog('快筛规则: 仅看涨吞没 + 仅今日 + 七因子评分（覆盖/放量/上穿/下破/收盘位置/低开高走/穿前低拉回）');
         }
         debugLog('时间: ' + new Date().toLocaleTimeString());
 
@@ -841,7 +865,7 @@
                     daysAgoTag +
                     volTag +
                 '</div>' +
-                // 快筛模式：质量评分 + 四因子 + 目标价
+                // 快筛模式：质量评分 + 七因子 + 目标价
                 (quickMode && s.quality ? (function() {
                     var q = s.quality;
                     var qLabel, qBg, qColor;
@@ -849,7 +873,7 @@
                     else if (q.level === 'good') { qLabel = '🟡 良好'; qBg = '#3D2E00'; qColor = '#FFD54F'; }
                     else { qLabel = '🔴 警惕'; qBg = '#3D1A1A'; qColor = '#FF6B6B'; }
 
-                    // 四因子标记
+                    // 七因子标记
                     var factorsHtml = '';
                     for (var fi = 0; fi < q.details.length; fi++) {
                         var f = q.details[fi];
@@ -866,9 +890,9 @@
                         // 质量标签
                         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
                             '<span style="font-size:16px;font-weight:800;color:' + qColor + ';">' + qLabel + '</span>' +
-                            '<span style="font-size:12px;color:#888;">四因子 ' + q.score + '/4</span>' +
+                            '<span style="font-size:12px;color:#888;">七因子 ' + q.score + '/7</span>' +
                         '</div>' +
-                        // 四因子
+                        // 七因子
                         '<div style="margin-bottom:8px;">' + factorsHtml + '</div>' +
                         // 目标价 + 止损
                         '<div style="display:flex;gap:16px;font-size:14px;border-top:1px solid #333840;padding-top:6px;">' +
