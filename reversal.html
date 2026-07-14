@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1A1D23">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>吞没形态 - A股</title>
+    <link rel="stylesheet" href="css/style.css?v=10">
+    <link rel="icon" type="image/svg+xml" href="img/icon.svg">
+    <style>
+        .param-slider-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 0; font-size: 15px; color: #BBB;
+        }
+        .param-slider-row label {
+            min-width: 120px; flex-shrink: 0; color: #AAA;
+        }
+        .param-slider-row input[type="range"] {
+            flex: 1; min-width: 0; height: 6px;
+            accent-color: #9B59B6;
+        }
+        .param-val {
+            min-width: 52px; text-align: right;
+            font-weight: 700; color: #BB86FC; font-size: 16px;
+        }
+        .reversal-detail {
+            display: flex; gap: 12px; flex-wrap: wrap;
+            margin-top: 10px; padding-top: 10px;
+            border-top: 1px solid #333840;
+        }
+        .reversal-item {
+            font-size: 13px; color: #999;
+        }
+        .reversal-item b {
+            color: #CCC; font-size: 15px;
+        }
+        .reversal-strength {
+            display: inline-block; padding: 3px 10px; border-radius: 6px;
+            font-size: 13px; font-weight: 700; margin-left: 6px;
+        }
+        .reversal-strength.strong {
+            background: #3D1A1A; color: #FF6B6B;
+        }
+        .reversal-strength.normal {
+            background: #2D3139; color: #FFD54F;
+        }
+        .reversal-strength.weak {
+            background: #1A2D1A; color: #66BB6A;
+        }
+        .vol-expand-tag {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 12px; font-weight: 600; margin-left: 6px;
+        }
+        .vol-expand-tag.big {
+            background: #3D1A1A; color: #FF6B6B;
+        }
+        .vol-expand-tag.normal {
+            background: #3D2E00; color: #FFD54F;
+        }
+        .vol-expand-tag.low {
+            background: #1A3D1A; color: #66BB6A;
+        }
+        /* 紫金渐变header */
+        .header-reversal {
+            background: linear-gradient(135deg, #4A1A6B 0%, #6B2C8A 40%, #9B59B6 100%) !important;
+        }
+        .mode-tab.active-reversal {
+            background: #9B59B6; color: #fff;
+            border-color: #9B59B6;
+            box-shadow: 0 4px 16px rgba(155,89,182,0.4);
+        }
+    </style>
+</head>
+<body>
+    <header class="header header-reversal">
+        <h1 class="header-title">🔄 吞没形态</h1>
+        <p class="header-subtitle">看跌吞没 + 看涨吞没 · 实体&amp;影线完全覆盖 · 近5日信号</p>
+    </header>
+
+    <!-- 模式切换 -->
+    <section class="mode-switch">
+        <a href="breakout.html" class="mode-tab">📈 盘整突破</a>
+        <a href="weekly.html" class="mode-tab">📊 周线</a>
+        <a href="vpa.html" class="mode-tab">📊 VPA</a>
+        <a href="reversal.html" class="mode-tab active-reversal">🔄 吞没</a>
+    </section>
+
+    <!-- 参数设置 -->
+    <section class="params-bar" id="paramsBar">
+        <div class="params-header">📐 筛选参数（点击展开/折叠）</div>
+        <div class="params-body" id="paramsBody">
+            <div class="param-slider-row">
+                <label>前日实体最小幅度</label>
+                <input type="range" id="bodyPctSlider" min="0.5" max="8.0" step="0.5" value="1.0">
+                <span class="param-val" id="bodyPctVal">1.0%</span>
+            </div>
+            <div class="param-slider-row">
+                <label>放量倍数下限</label>
+                <input type="range" id="volExpandSlider" min="1.0" max="4.0" step="0.1" value="1.2">
+                <span class="param-val" id="volExpandVal">1.2x</span>
+            </div>
+            <div class="param-row" style="margin-top:8px;">
+                <span>信号方向：</span>
+                <label class="radio-row"><input type="radio" name="direction" id="optDirAll" checked> 全部</label>
+                <label class="radio-row"><input type="radio" name="direction" id="optDirBear"> 📉 仅看跌</label>
+                <label class="radio-row"><input type="radio" name="direction" id="optDirBull"> 📈 仅看涨</label>
+            </div>
+            <div class="param-row" style="margin-top:8px;">
+                <span>最低市值：</span>
+                <label class="radio-row"><input type="radio" name="cap" id="optCap20" checked> 20亿</label>
+                <label class="radio-row"><input type="radio" name="cap" id="optCap50"> 50亿</label>
+                <label class="radio-row"><input type="radio" name="cap" id="optCap100"> 100亿</label>
+            </div>
+            <div class="param-row" style="color:#777;font-size:13px;margin-top:6px;">
+                📉 看跌吞没：阳线+阴线覆盖（强转弱）　📈 看涨吞没：阴线+阳线覆盖（弱转强）<br>
+                扫描近5日内任意相邻两天 · 实体&amp;影线完全覆盖即触发
+            </div>
+        </div>
+    </section>
+
+    <!-- 操作栏 -->
+    <section class="action-bar">
+        <button id="btnRefresh" class="btn-refresh" style="background:#4A1A6B;border-color:#9B59B6;">
+            <svg class="btn-icon-svg" viewBox="0 0 24 24" width="18" height="18"><path d="M17.65 6.35A7.96 7.96 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>
+            <span class="btn-text">扫描吞没信号</span>
+        </button>
+        <div class="refresh-info">
+            <span id="lastRefresh" class="last-refresh">尚未扫描</span>
+            <span id="marketStatus" class="market-status">--</span>
+        </div>
+    </section>
+
+    <!-- 加载 -->
+    <section id="loadingOverlay" class="loading-area" style="display:none;">
+        <div class="spinner"></div>
+        <p id="loadingTitle" class="loading-text">正在扫描...</p>
+        <p id="loadingSub" class="loading-sub"></p>
+    </section>
+
+    <!-- 错误 -->
+    <section id="errorArea" class="error-area" style="display:none;">
+        <p id="errorMsg" class="error-text"></p>
+    </section>
+
+    <!-- 调试 -->
+    <section id="debugArea" class="debug-area">
+        <div class="debug-header">🔍 扫描日志</div>
+        <pre id="debugText" class="debug-text"></pre>
+    </section>
+
+    <!-- 结果 -->
+    <section id="resultArea" class="result-section" style="display:none;">
+        <h2 class="result-title"><span class="result-icon">🔄</span>近5日吞没信号<span class="result-badge result-badge-best" id="resultBadge">按反转强度排序</span></h2>
+        <p class="result-summary">共 <strong id="countResult">0</strong> 只 · 最近5个交易日内出现吞没形态</p>
+        <div id="listResult" class="stock-list"></div>
+    </section>
+
+    <!-- 空状态 -->
+    <section id="emptyState" class="empty-state">
+        <div class="empty-icon">🔄</div>
+        <p class="empty-text">点击"扫描吞没信号"查找近5日吞没形态</p>
+        <p class="empty-hint">看跌吞没（强转弱）· 看涨吞没（弱转强）· 放量覆盖更有力</p>
+    </section>
+
+    <!-- 弹窗 -->
+    <section id="modalOverlay" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <p id="modalMsg" class="modal-msg"></p>
+            <div class="modal-btns" id="modalBtns"></div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>「趋势的转折，往往从一根吞没K线开始。」</p>
+    </footer>
+
+    <script>
+        function myAlert(msg) {
+            return new Promise(function(resolve) {
+                document.getElementById('modalMsg').textContent = msg;
+                document.getElementById('modalBtns').innerHTML = '<button class="modal-btn-ok" id="modalOk">确定</button>';
+                document.getElementById('modalOverlay').style.display = 'flex';
+                document.getElementById('modalOk').onclick = function() {
+                    document.getElementById('modalOverlay').style.display = 'none'; resolve();
+                };
+            });
+        }
+        function myConfirm(msg) {
+            return new Promise(function(resolve) {
+                document.getElementById('modalMsg').textContent = msg;
+                document.getElementById('modalBtns').innerHTML = '<button class="modal-btn-cancel" id="modalCancel">取消</button><button class="modal-btn-ok" id="modalOk">确定</button>';
+                document.getElementById('modalOverlay').style.display = 'flex';
+                document.getElementById('modalOk').onclick = function() {
+                    document.getElementById('modalOverlay').style.display = 'none'; resolve(true);
+                };
+                document.getElementById('modalCancel').onclick = function() {
+                    document.getElementById('modalOverlay').style.display = 'none'; resolve(false);
+                };
+            });
+        }
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+    </script>
+    <script src="js/api.js?v=8"></script>
+    <script src="js/reversal.js?v=2"></script>
+</body>
+</html>

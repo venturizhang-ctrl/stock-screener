@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1A1D23">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ETF动量轮动 - A股</title>
+    <link rel="stylesheet" href="css/style.css?v=10">
+    <link rel="icon" type="image/svg+xml" href="img/icon.svg">
+    <style>
+        /* 参数滑块 */
+        .param-slider-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 0; font-size: 15px; color: #BBB;
+        }
+        .param-slider-row label {
+            min-width: 110px; flex-shrink: 0; color: #AAA;
+        }
+        .param-slider-row input[type="range"] {
+            flex: 1; min-width: 0; height: 6px;
+            accent-color: #4A90D9;
+        }
+        .param-val {
+            min-width: 52px; text-align: right;
+            font-weight: 700; color: #FFD54F; font-size: 16px;
+        }
+        .param-desc {
+            font-size: 13px; color: #777; padding: 6px 0 2px; line-height: 1.6;
+        }
+
+        /* 指标卡片 */
+        .metrics-row {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            padding: 14px 12px; background: #1E2130;
+        }
+        .metric-card {
+            flex: 1 1 calc(50% - 8px); min-width: 140px;
+            background: #252830; border-radius: 10px;
+            padding: 14px; text-align: center;
+            border: 1px solid #333840;
+        }
+        .metric-label {
+            font-size: 12px; color: #888; margin-bottom: 6px;
+        }
+        .metric-value {
+            font-size: 26px; font-weight: 800;
+        }
+        .metric-value.up { color: #E74C3C; }
+        .metric-value.down { color: #66BB6A; }
+        .metric-value.neutral { color: #FFD54F; }
+        .metric-sub {
+            font-size: 12px; color: #666; margin-top: 2px;
+        }
+
+        /* K线图区域 */
+        .chart-section {
+            padding: 10px 12px 4px; background: #1E2130;
+        }
+        .chart-title {
+            font-size: 14px; color: #AAA; margin-bottom: 6px; font-weight: 600;
+        }
+        .chart-wrap {
+            background: #252830; border-radius: 10px;
+            padding: 6px; border: 1px solid #333840;
+            position: relative;
+        }
+        canvas {
+            display: block; width: 100%; height: auto;
+            border-radius: 6px;
+        }
+
+        /* 对比表 */
+        .compare-section {
+            padding: 10px 12px; background: #1E2130;
+        }
+        .compare-table {
+            width: 100%; border-collapse: collapse;
+            background: #252830; border-radius: 10px;
+            overflow: hidden; border: 1px solid #333840;
+        }
+        .compare-table th, .compare-table td {
+            padding: 11px 12px; text-align: center;
+            font-size: 14px; border-bottom: 1px solid #333840;
+        }
+        .compare-table th {
+            background: #2D3139; color: #AAA; font-weight: 600; font-size: 13px;
+        }
+        .compare-table .highlight {
+            background: #1A2D3D; color: #4A90D9; font-weight: 700;
+        }
+        .compare-table .tag-strategy {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: 700;
+            background: #1A2D3D; color: #4A90D9;
+        }
+
+        /* 交易记录 */
+        .trades-section {
+            padding: 10px 12px 20px; background: #1E2130;
+        }
+        .trades-table {
+            width: 100%; border-collapse: collapse;
+            background: #252830; border-radius: 10px;
+            overflow: hidden; border: 1px solid #333840;
+            font-size: 13px;
+        }
+        .trades-table th, .trades-table td {
+            padding: 9px 8px; text-align: center;
+            border-bottom: 1px solid #333840;
+        }
+        .trades-table th {
+            background: #2D3139; color: #AAA; font-weight: 600; font-size: 12px;
+            position: sticky; top: 0; z-index: 1;
+        }
+        .trades-table .trade-sell { color: #66BB6A; }
+        .trades-table .trade-buy { color: #E74C3C; }
+        .trade-arrow { color: #888; margin: 0 4px; }
+        .trade-reason {
+            font-size: 11px; color: #888; display: block; margin-top: 2px;
+        }
+
+        /* 滚动容器 */
+        .trades-scroll {
+            max-height: 360px; overflow-y: auto;
+            border-radius: 10px; border: 1px solid #333840;
+        }
+
+        /* 规则说明 */
+        .rules-box {
+            margin: 10px 12px; padding: 14px;
+            background: #252830; border-radius: 10px;
+            border: 1px solid #333840;
+            font-size: 13px; color: #999; line-height: 1.8;
+        }
+        .rules-box b { color: #FFD54F; }
+        .rules-box .highlight-etf { color: #4A90D9; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1 class="header-title">🚀 ETF动量轮动</h1>
+        <p class="header-subtitle">强者恒强 · 动量选优 · 弱市守债</p>
+    </header>
+
+    <!-- 模式切换 -->
+    <section class="mode-switch">
+        <a href="weekly.html" class="mode-tab">📊 周线</a>
+        <a href="vpa.html" class="mode-tab">📊 VPA</a>
+        <a href="breakout.html" class="mode-tab">📈 盘整突破</a>
+        <a href="etf_momentum.html" class="mode-tab active">🚀 ETF动量</a>
+        <a href="reversal.html" class="mode-tab">🔄 吞没</a>
+    </section>
+
+    <!-- 参数设置 -->
+    <section class="params-bar" id="paramsBar">
+        <div class="params-header">📐 回测参数（点击展开/折叠）</div>
+        <div class="params-body" id="paramsBody">
+            <div class="param-slider-row">
+                <label>回看天数</label>
+                <input type="range" id="lookbackSlider" min="5" max="60" step="1" value="20">
+                <span class="param-val" id="lookbackVal">20天</span>
+            </div>
+            <div class="param-desc">
+                <b>ETF池：</b>创业ETF(159915) · 沪深300ETF(510310) · 豆粕ETF(159985) · 国债ETF(511260)
+            </div>
+        </div>
+    </section>
+
+    <!-- 规则说明 -->
+    <div class="rules-box" id="rulesBox">
+        <b>📋 交易规则：</b>每日14:30检查近<span id="ruleDays">20</span>天涨幅<br>
+        ① <span class="highlight-etf">创业ETF</span>涨幅最大 且 &gt;0.1% → 全仓买入创业ETF<br>
+        ② <span class="highlight-etf">豆粕ETF</span>涨幅最大 且 &gt;0.1% → 全仓买入豆粕ETF<br>
+        ③ 其他情况 → 全仓买入<span class="highlight-etf">国债ETF</span>
+    </div>
+
+    <!-- 操作栏 -->
+    <section class="action-bar">
+        <button id="btnRun" class="btn-refresh">
+            <svg class="btn-icon-svg" viewBox="0 0 24 24" width="18" height="18"><path d="M17.65 6.35A7.96 7.96 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>
+            <span class="btn-text">运行回测</span>
+        </button>
+        <div class="refresh-info">
+            <span id="lastRun" class="last-refresh">点击运行回测</span>
+            <span id="marketStatus" class="market-status">--</span>
+        </div>
+    </section>
+
+    <!-- 加载 -->
+    <section id="loadingOverlay" class="loading-area" style="display:none;">
+        <div class="spinner"></div>
+        <p id="loadingTitle" class="loading-text">正在获取ETF历史数据...</p>
+        <p id="loadingSub" class="loading-sub"></p>
+    </section>
+
+    <!-- 错误 -->
+    <section id="errorArea" class="error-area" style="display:none;">
+        <p id="errorMsg" class="error-text"></p>
+    </section>
+
+    <!-- 结果区域 -->
+    <section id="resultArea" style="display:none;">
+        <!-- 指标卡片 -->
+        <div class="metrics-row" id="metricsRow"></div>
+
+        <!-- 权益曲线 -->
+        <div class="chart-section">
+            <div class="chart-title">📈 权益曲线（起始资金 = 1.00）</div>
+            <div class="chart-wrap">
+                <canvas id="equityCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- 收益对比 -->
+        <div class="compare-section">
+            <div class="chart-title">📊 收益对比</div>
+            <div style="overflow-x:auto;">
+                <table class="compare-table" id="compareTable"></table>
+            </div>
+        </div>
+
+        <!-- 交易记录 -->
+        <div class="trades-section" id="tradesSection">
+            <div class="chart-title">📋 交易记录 <span style="font-size:12px;color:#888;" id="tradeCount"></span></div>
+            <div class="trades-scroll">
+                <table class="trades-table">
+                    <thead><tr>
+                        <th>日期</th><th>操作</th><th>价格</th><th>触发条件</th>
+                    </tr></thead>
+                    <tbody id="tradesBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- 空状态 -->
+    <section id="emptyState" class="empty-state">
+        <div class="empty-icon">🚀</div>
+        <p class="empty-text">点击"运行回测"查看动量轮动策略的历史表现</p>
+        <p class="empty-hint">基于真实历史数据 · 每日14:30检查动量信号 · 强者恒强</p>
+    </section>
+
+    <!-- 调试 -->
+    <section id="debugArea" class="debug-area">
+        <div class="debug-header">🔍 回测日志</div>
+        <pre id="debugText" class="debug-text"></pre>
+    </section>
+
+    <!-- 弹窗 -->
+    <section id="modalOverlay" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <p id="modalMsg" class="modal-msg"></p>
+            <div class="modal-btns" id="modalBtns"></div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>动量策略：「截断亏损，让利润奔跑。」</p>
+    </footer>
+
+    <script>
+        function myAlert(msg) {
+            return new Promise(function(resolve) {
+                document.getElementById('modalMsg').textContent = msg;
+                document.getElementById('modalBtns').innerHTML = '<button class="modal-btn-ok" id="modalOk">确定</button>';
+                document.getElementById('modalOverlay').style.display = 'flex';
+                document.getElementById('modalOk').onclick = function() {
+                    document.getElementById('modalOverlay').style.display = 'none'; resolve();
+                };
+            });
+        }
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+    </script>
+    <script src="js/etf_momentum.js?v=1"></script>
+</body>
+</html>
