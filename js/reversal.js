@@ -93,14 +93,21 @@
         return { ok: true, label: '已收盘', msg: null };
     }
 
-    document.getElementById('btnQuickScan').addEventListener('click', async function() {
+    document.getElementById('btnQuickScan').addEventListener('click', function() {
         var tw = getTimeWindow();
-        if (!tw.ok) {
-            var proceed = await myConfirm(tw.msg);
-            if (!proceed) return;
+        function doScan() {
+            quickMode = true;
+            runScreening();
         }
-        quickMode = true;
-        runScreening();
+        if (tw.ok) {
+            doScan();
+        } else {
+            myConfirm(tw.msg).then(function(proceed) {
+                if (proceed) doScan();
+            }).catch(function() {
+                // 用户取消或出错，什么都不做
+            });
+        }
     });
     document.getElementById('btnFullScan').addEventListener('click', function() {
         quickMode = false;
@@ -160,6 +167,7 @@
     }
 
     // ===== 参数栏折叠 =====
+    (function() {
         var header = document.querySelector('#paramsBar .params-header');
         var body = document.getElementById('paramsBody');
         if (header && body) {
