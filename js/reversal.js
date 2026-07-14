@@ -79,8 +79,26 @@
         if (dirBull) dirBull.addEventListener('change', function() { if (this.checked) filterDirection = 'bullish'; });
     })();
 
-    // ===== 2:40 快筛按钮 =====
-    document.getElementById('btnQuickScan').addEventListener('click', function() {
+    // ===== 2:40 快筛按钮 + 时间检查 =====
+
+    function getTimeWindow() {
+        var now = new Date();
+        var day = now.getDay();
+        var t = now.getHours() * 100 + now.getMinutes();
+
+        if (day === 0 || day === 6) return { ok: false, label: '周末休市', msg: '周末休市，无今日信号。可以用全量扫描看历史信号。' };
+        if (t < 930) return { ok: false, label: '等待开盘', msg: '尚未开盘，快筛无意义。' };
+        if (t < 1430) return { ok: false, label: 'K线未定型', msg: '现在' + now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0') + '，日K线还在变化中。\n\n建议等到 14:30 后再快筛，信号更可靠。\n\n仍然要扫吗？' };
+        if (t <= 1505) return { ok: true, label: '✅ 黄金窗口', msg: null };
+        return { ok: true, label: '已收盘', msg: null };
+    }
+
+    document.getElementById('btnQuickScan').addEventListener('click', async function() {
+        var tw = getTimeWindow();
+        if (!tw.ok) {
+            var proceed = await myConfirm(tw.msg);
+            if (!proceed) return;
+        }
         quickMode = true;
         runScreening();
     });
@@ -88,6 +106,14 @@
         quickMode = false;
         runScreening();
     });
+
+    // 实时更新时间窗口标签
+    (function updateTimeWindow() {
+        var tw = getTimeWindow();
+        var msEl = document.getElementById('marketStatus');
+        if (msEl) { msEl.textContent = tw.label; msEl.className = tw.ok ? 'market-status trading' : 'market-status closed'; }
+        setTimeout(updateTimeWindow, 30000);
+    })();
 
     // ===== 四因子质量评分 =====
 
