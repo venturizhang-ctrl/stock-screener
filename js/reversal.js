@@ -6,6 +6,10 @@
  * - 看涨吞没（Bullish Engulfing）：阴线 + 阳线完全覆盖 → 弱转强
  * - 扫描最近5个交易日内的吞没形态
  *
+ * 2:40 快筛模式：
+ * - 仅看涨吞没 + 仅今日触发 + 四因子质量评分
+ * - 目标卖价 ≈ 现价 × (1 + 下破×2)
+ *
  * 流程：
  * 阶段1：全A股扫描 → 市值筛选
  * 阶段2：拉日K线（20根）→ 检测近5日吞没形态
@@ -26,6 +30,7 @@
     var minVolExpand = 1.2;     // 放量倍数下限
     var minMarketCap = 20;      // 最低总市值（亿）
     var filterDirection = 'all'; // 'all' | 'bearish' | 'bullish'
+    var quickMode = false;      // 2:40 快筛模式
 
     var debugLines = [];
     function debugLog(msg) {
@@ -74,8 +79,61 @@
         if (dirBull) dirBull.addEventListener('change', function() { if (this.checked) filterDirection = 'bullish'; });
     })();
 
+    // ===== 2:40 快筛按钮 =====
+    document.getElementById('btnQuickScan').addEventListener('click', function() {
+        quickMode = true;
+        runScreening();
+    });
+    document.getElementById('btnFullScan').addEventListener('click', function() {
+        quickMode = false;
+        runScreening();
+    });
+
+    // ===== 四因子质量评分 =====
+
+    /**
+     * 对看涨吞没信号做四因子质量评分
+     *  1. 覆盖倍数 1.5~3x
+     *  2. 放量倍数 1.3~2.5x
+     *  3. 上穿率 > 0.5%
+     *  4. 下破率 1~3%
+     *  @returns {{ level: string, score: number, details: Array, targetPct: number, stopPct: number }}
+     */
+    function scoreQuality(sig) {
+        var score = 0;
+        var details = [];
+        var isBearish = (sig.direction === 'bearish');
+
+        // 因子1：覆盖倍数
+        var bodyOk = (sig.bodyRatio >= 1.5 && sig.bodyRatio <= 3.0);
+        if (bodyOk) score++;
+        details.push({ name: '覆盖倍数', value: sig.bodyRatio.toFixed(1) + 'x', ok: bodyOk, hint: '1.5~3x' });
+
+        // 因子2：放量倍数
+        var volOk = (sig.volExpand >= 1.3 && sig.volExpand <= 2.5);
+        if (volOk) score++;
+        details.push({ name: '放量', value: sig.volExpand.toFixed(1) + 'x', ok: volOk, hint: '1.3~2.5x' });
+
+        // 因子3：上穿率
+        var upOk = (sig.upperPierce > 0.5);
+        if (upOk) score++;
+        details.push({ name: '上穿', value: sig.upperPierce.toFixed(1) + '%', ok: upOk, hint: '>0.5%' });
+
+        // 因子4：下破率（核心）
+        var dnOk = (sig.lowerPierce >= 1.0 && sig.lowerPierce <= 3.0);
+        if (dnOk) score++;
+        details.push({ name: '下破', value: sig.lowerPierce.toFixed(1) + '%', ok: dnOk, hint: '1~3%' });
+
+        var level = score >= 4 ? 'excellent' : (score >= 3 ? 'good' : 'warning');
+
+        // 目标卖价（仅看涨吞没有意义）
+        var targetPct = sig.lowerPierce * 2;
+        var stopPct = sig.bar1Pct;  // 止损 = 前日阴线低点再往下一点
+
+        return { score: score, level: level, details: details, targetPct: targetPct, stopPct: stopPct };
+    }
+
     // ===== 参数栏折叠 =====
-    (function() {
         var header = document.querySelector('#paramsBar .params-header');
         var body = document.getElementById('paramsBody');
         if (header && body) {
@@ -393,7 +451,7 @@
     //  主流程
     // ============================================================
 
-    document.getElementById('btnRefresh').addEventListener('click', runScreening);
+    // 按钮绑定已在上面（btnQuickScan + btnFullScan）
 
     async function runScreening() {
         clearResults();
@@ -401,13 +459,23 @@
         setRefreshButton(true);
         debugLines = [];
 
+        // 快筛模式：锁定看涨 + 放宽参数
+        var savedDirection = filterDirection;
+        if (quickMode) {
+            filterDirection = 'bullish';
+            minBodyPct = 0.5;   // 放宽实体要求
+            minVolExpand = 1.0; // 不卡放量门槛，交给评分
+        }
+
         var dirLabel = filterDirection === 'bearish' ? '仅看跌' : (filterDirection === 'bullish' ? '仅看涨' : '全部');
-        debugLog('=== 近5日吞没形态扫描 ===');
+        var modeLabel = quickMode ? '⚡ 2:40快筛' : '🔍 全量扫描';
+        debugLog('=== ' + modeLabel + ' ===');
         debugLog('参数: 前日实体≥' + minBodyPct.toFixed(1) +
             '% | 放量≥' + minVolExpand.toFixed(1) +
             'x | 市值≥' + minMarketCap + '亿 | 方向: ' + dirLabel);
-        debugLog('看跌吞没: 阳线+阴线覆盖 | 看涨吞没: 阴线+阳线覆盖');
-        debugLog('范围: 最近5个交易日内任意相邻两天');
+        if (quickMode) {
+            debugLog('快筛规则: 仅看涨吞没 + 仅今日 + 四因子评分');
+        }
         debugLog('时间: ' + new Date().toLocaleTimeString());
 
         try {
@@ -485,9 +553,29 @@
                 if (bi + batchSize < candidates.length) await delay(300);
             }
 
-            results.sort(function(a, b) {
-                return b.signal.score - a.signal.score;
-            });
+            // ===== 快筛模式：仅今日 + 质量评分 =====
+            if (quickMode) {
+                var todayResults = [];
+                for (var ri2 = 0; ri2 < results.length; ri2++) {
+                    if (results[ri2].signal.daysAgo === 0) {
+                        todayResults.push(results[ri2]);
+                    }
+                }
+                debugLog('快筛过滤: ' + results.length + ' → 仅今日 ' + todayResults.length + ' 只');
+
+                for (var ri3 = 0; ri3 < todayResults.length; ri3++) {
+                    todayResults[ri3].quality = scoreQuality(todayResults[ri3].signal);
+                }
+                results = todayResults;
+
+                results.sort(function(a, b) {
+                    return b.quality.score - a.quality.score;
+                });
+            } else {
+                results.sort(function(a, b) {
+                    return b.signal.score - a.signal.score;
+                });
+            }
 
             var bearCnt = 0, bullCnt = 0;
             for (var j = 0; j < results.length; j++) {
@@ -507,6 +595,12 @@
             showError(e.message || '扫描失败');
             setRefreshButton(false);
             hideLoading();
+        } finally {
+            // 恢复快筛修改的参数
+            if (quickMode) {
+                filterDirection = savedDirection;
+                quickMode = false;
+            }
         }
     }
 
@@ -533,7 +627,24 @@
         var count = document.getElementById('countResult');
         if (count) count.textContent = results.length;
         var badge = document.getElementById('resultBadge');
-        if (badge) badge.textContent = '按反转强度排序';
+        if (badge) badge.textContent = quickMode ? '今日触发 · 按质量排序' : '按反转强度排序';
+
+        // 快筛模式：统计各级别数量
+        if (quickMode && results.length > 0) {
+            var exc = 0, good = 0, warn = 0;
+            for (var i = 0; i < results.length; i++) {
+                var q = results[i].quality;
+                if (q.level === 'excellent') exc++;
+                else if (q.level === 'good') good++;
+                else warn++;
+            }
+            var sumEl = document.querySelector('.result-summary');
+            if (sumEl) sumEl.innerHTML = '共 <strong>' + results.length + '</strong> 只 · ' +
+                '<span style="color:#66BB6A;">🟢优秀 ' + exc + '</span> · ' +
+                '<span style="color:#FFD54F;">🟡良好 ' + good + '</span> · ' +
+                '<span style="color:#FF6B6B;">🔴警惕 ' + warn + '</span>';
+        }
+
         renderStockCards(results);
     }
 
@@ -696,6 +807,42 @@
                     daysAgoTag +
                     volTag +
                 '</div>' +
+                // 快筛模式：质量评分 + 四因子 + 目标价
+                (quickMode && s.quality ? (function() {
+                    var q = s.quality;
+                    var qLabel, qBg, qColor;
+                    if (q.level === 'excellent') { qLabel = '🟢 优秀'; qBg = '#1A3D1A'; qColor = '#66BB6A'; }
+                    else if (q.level === 'good') { qLabel = '🟡 良好'; qBg = '#3D2E00'; qColor = '#FFD54F'; }
+                    else { qLabel = '🔴 警惕'; qBg = '#3D1A1A'; qColor = '#FF6B6B'; }
+
+                    // 四因子标记
+                    var factorsHtml = '';
+                    for (var fi = 0; fi < q.details.length; fi++) {
+                        var f = q.details[fi];
+                        var fIcon = f.ok ? '✓' : '✗';
+                        var fColor = f.ok ? '#66BB6A' : '#E74C3C';
+                        factorsHtml += '<span style="display:inline-block;padding:2px 6px;margin:2px;border-radius:4px;font-size:11px;background:#1A1D23;color:' + fColor + ';">' + fIcon + ' ' + f.name + ' ' + f.value + '</span>';
+                    }
+
+                    // 目标卖价
+                    var targetPrice = s.price * (1 + q.targetPct / 100);
+                    var stopPrice = sig.bar1Low; // 前日最低点
+
+                    return '<div style="margin:6px 0;padding:8px 10px;background:#1A1D23;border-radius:8px;border:1px solid ' + qColor + ';">' +
+                        // 质量标签
+                        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
+                            '<span style="font-size:16px;font-weight:800;color:' + qColor + ';">' + qLabel + '</span>' +
+                            '<span style="font-size:12px;color:#888;">四因子 ' + q.score + '/4</span>' +
+                        '</div>' +
+                        // 四因子
+                        '<div style="margin-bottom:8px;">' + factorsHtml + '</div>' +
+                        // 目标价 + 止损
+                        '<div style="display:flex;gap:16px;font-size:14px;border-top:1px solid #333840;padding-top:6px;">' +
+                            '<span>🎯 目标: <b style="color:#66BB6A;">' + targetPrice.toFixed(2) + '</b> <span style="font-size:12px;color:#888;">(+' + q.targetPct.toFixed(1) + '%)</span></span>' +
+                            '<span>🛑 止损: <b style="color:#FF6B6B;">' + stopPrice.toFixed(2) + '</b> <span style="font-size:12px;color:#888;">(前低)</span></span>' +
+                        '</div>' +
+                    '</div>';
+                })() : '') +
                 // 日期
                 '<div style="font-size:13px;color:#888;margin:4px 0;">' +
                     '📅 <span style="color:' + bar1PctColor + ';">' + sig.bar1Label + ' ' + sig.bar1Date + '</span> → ' +
@@ -745,12 +892,10 @@
     }
 
     function setRefreshButton(loading) {
-        var btn = document.getElementById('btnRefresh');
-        if (btn) {
-            btn.disabled = loading;
-            var span = btn.querySelector('.btn-text');
-            if (span) span.textContent = loading ? '扫描中...' : '扫描吞没信号';
-        }
+        var btnQ = document.getElementById('btnQuickScan');
+        var btnF = document.getElementById('btnFullScan');
+        if (btnQ) { btnQ.disabled = loading; btnQ.textContent = loading ? '⏳ 扫描中...' : '⚡ 2:40 快筛'; }
+        if (btnF) { btnF.disabled = loading; btnF.textContent = loading ? '⏳ 扫描中...' : '🔍 全量扫描'; }
     }
 
     function showError(msg) {
